@@ -1,0 +1,32 @@
+# Node
+node_modules/
+.env
+.env.*
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Build / dist
+dist/
+build/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# React/Vite/Next.js
+*.tsbuildinfo
+.next/
+out/
+.cache/
+coverage/
+
+# Otros
+*.local
+*.swp
