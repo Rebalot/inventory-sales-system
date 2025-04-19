@@ -1,7 +1,6 @@
-version: '3'
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    image: elastic/elasticsearch:8.17.5
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false # Desactiva seguridad para desarrollo
@@ -11,7 +10,7 @@ services:
       - es_data:/usr/share/elasticsearch/data
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.10.0
+    image: elastic/kibana:8.17.5
     depends_on:
       - elasticsearch
     ports:
@@ -20,7 +19,7 @@ services:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:8.10.0
+    image: elastic/logstash:8.17.5
     volumes:
       - ./logstash-config:/usr/share/logstash/pipeline/
     ports:
