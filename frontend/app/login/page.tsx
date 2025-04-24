@@ -18,6 +18,7 @@ import {
   CircularProgress,
 } from "@mui/material"
 import { Visibility, VisibilityOff } from "@mui/icons-material"
+import { jwtDecode } from "jwt-decode"
 
 // Define the form schema with Zod
 const loginSchema = z.object({
@@ -50,25 +51,25 @@ export default function LoginPage() {
     setError("")
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // For demo purposes, we'll just check for a specific email/password
-      if (data.email === "admin@example.com" && data.password === "password123") {
-        // Store token in localStorage
-        localStorage.setItem("authToken", "demo-token-12345")
-        localStorage.setItem("userName", "Admin User")
-        router.push("/dashboard")
-      } else {
-        setError("Invalid email or password")
+      const res = await fetch('http://localhost:3001/auth/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+    
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Login failed');
       }
-    } catch (err) {
-      setError("An error occurred. Please try again.")
-      console.error(err)
+
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Unexpected error occurred');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Container component="main" maxWidth="xs">

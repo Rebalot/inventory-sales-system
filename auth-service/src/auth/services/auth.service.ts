@@ -18,6 +18,7 @@ export class AuthService {
     const newUser = new this.userModel({
       email: registerDto.email,
       password: hashedPassword,
+      role: registerDto.role || 'user' 
     });
     return newUser.save();
   }
