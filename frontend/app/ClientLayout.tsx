@@ -7,6 +7,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
 import { useState, useEffect, createContext, useMemo } from "react"
 import Box from "@mui/material/Box"
+import { AuthProvider } from "@/lib/auth/AuthContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -65,12 +66,15 @@ export default function ClientLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <AuthProvider>
         <ColorModeContext.Provider value={colorMode}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <Box sx={{ display: "flex", minHeight: "100vh" }}>{children}</Box>
           </ThemeProvider>
         </ColorModeContext.Provider>
+        </AuthProvider>
+        
       </body>
     </html>
   )

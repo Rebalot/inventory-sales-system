@@ -19,6 +19,8 @@ import {
 } from "@mui/material"
 import { Visibility, VisibilityOff } from "@mui/icons-material"
 import { jwtDecode } from "jwt-decode"
+import { toast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/auth/AuthContext"
 
 // Define the form schema with Zod
 const loginSchema = z.object({
@@ -29,7 +31,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
-  const router = useRouter()
+  const { login } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -47,27 +49,14 @@ export default function LoginPage() {
   })
 
   const onSubmit = async (data: LoginFormData) => {
-    setLoading(true)
-    setError("")
-
     try {
-      const res = await fetch('http://localhost:3001/auth/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+      await login(data.email, data.password);
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Error al iniciar sesión. Por favor, verifica tus credenciales.",
+        variant: "destructive",
       });
-    
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || 'Login failed');
-      }
-
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Unexpected error occurred');
-    } finally {
-      setLoading(false);
     }
   };
 

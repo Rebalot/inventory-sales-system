@@ -1,18 +1,38 @@
-import { Controller, Post, Body, UnauthorizedException, HttpCode, HttpStatus, Res } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, HttpCode, HttpStatus, Res, Get, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { LoginDto } from '../dtos/login.dto';
 import { RegisterDto } from '../dtos/register.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 
-@Controller('auth')
+interface AuthenticatedRequest extends Request {
+  user: {
+    sub: string;
+    email: string;
+    role: string;
+  }
+}
+@Controller('api/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  getProfile(@Req() req: AuthenticatedRequest) {
+    const user = req.user; // Viene del token validado por AuthGuard
+
+    return {
+      id: user['sub'],
+      email: user['email'],
+      role: user['role'],
+    };
+  }
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
-
+  
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Res({ passthrough: true }) res: Response, @Body() loginDto: LoginDto) {
