@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useContext } from "react"
+import { useState, useContext, use, useEffect } from "react"
 import {
   AppBar,
   Toolbar,
@@ -24,19 +24,36 @@ import {
 } from "@mui/icons-material"
 import { useRouter } from "next/navigation"
 import { ColorModeContext } from "@/app/ClientLayout"
+import { useAuth } from "@/lib/auth/AuthContext"
+import { get } from "http"
 
 interface HeaderProps {
   toggleDrawer: () => void
 }
-
 export default function Header({ toggleDrawer }: HeaderProps) {
   const router = useRouter()
   const theme = useTheme()
   const colorMode = useContext(ColorModeContext)
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const { user, logout } = useAuth()
 
-  const userName = typeof window !== "undefined" ? localStorage.getItem("userName") || "User" : "User"
+  // useEffect(() => {
+  //   const getName = (user: User) => {
+  //     if (user?.firstName && user?.lastName) {
+  //       return `${user.firstName} ${user.lastName}`
+  //     } else if (user?.firstName) {
+  //       return user.firstName
+  //     }
+  //     else if (user?.lastName) {
+  //       return user.lastName
+  //     }
+  //     return "Default Name"
+  //   }
+  // if (user) {
+  //   getName(user)
+  // }
+  // }, [user])
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -46,11 +63,8 @@ export default function Header({ toggleDrawer }: HeaderProps) {
     setAnchorEl(null)
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken")
-    localStorage.removeItem("userName")
-    router.push("/login")
-    handleClose()
+  const handleLogout = async () => {
+    await logout()
   }
 
   return (
@@ -83,7 +97,7 @@ export default function Header({ toggleDrawer }: HeaderProps) {
               aria-haspopup="true"
               aria-label="account of current user"
             >
-              <Avatar sx={{ width: 32, height: 32 }}>{userName.charAt(0).toUpperCase()}</Avatar>
+              <Avatar alt={"User avatar"} sx={{ width: 32, height: 32 }} src={user?.avatar}/>
             </IconButton>
           </Tooltip>
 

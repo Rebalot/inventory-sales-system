@@ -20,7 +20,7 @@ export class AuthController {
   @Get('me')
   getProfile(@Req() req: AuthenticatedRequest) {
     const user = req.user; // Viene del token validado por AuthGuard
-
+    console.log('Usuario autenticado:', user); // Agregado para depuración
     return {
       id: user['sub'],
       email: user['email'],
@@ -37,16 +37,35 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Res({ passthrough: true }) res: Response, @Body() loginDto: LoginDto) {
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
+    console.log('Usuario validado:', user); // Agregado para depuración
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const { access_token: accessToken } = await this.authService.login(user);
 
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      secure: true, // solo en HTTPS
-      sameSite: 'strict', // evita CSRF
+      secure: process.env.NODE_ENV === 'production', // solo en HTTPS si es true
+      sameSite: 'lax', // permite el envío de cookies en solicitudes de origen cruzado
       maxAge: 1000 * 60 * 60 * 1, // 1 hora
     });
 
-    return { message: 'Login successful' };
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      ...(user.lastName && { lastName: user.lastName }),
+      avatar: user.avatar,
+      role: user.role
+    };
+  }
+  
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+    return { message: 'Logged out successfully' };
   }
 }

@@ -14,11 +14,21 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto): Promise<User> {
+    let seed : string = '';
+    const oneFirstName = registerDto.firstName.split(' ')[0];
+      seed = oneFirstName;
+    if(registerDto.lastName) {
+      const oneLastName = registerDto.lastName.split(' ')[0];
+      seed += '%20' + oneLastName;
+    }
     const hashedPassword = bcrypt.hashSync(registerDto.password, 10);
     const newUser = new this.userModel({
       email: registerDto.email,
       password: hashedPassword,
-      role: registerDto.role || 'user' 
+      firstName: registerDto.firstName,
+      lastName: registerDto.lastName,
+      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${seed}`,
+      role: registerDto.role
     });
     return newUser.save();
   }

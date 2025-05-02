@@ -5,7 +5,8 @@ import { Box, Grid, Paper, Typography, Card, CardContent, CardHeader, Divider, S
 import { AttachMoney, Inventory, ShoppingCart, TrendingUp } from "@mui/icons-material"
 import { Bar } from "react-chartjs-2"
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js"
-import DashboardLayout from "@/components/layout/dashboard-layout"
+import NavigationLayout from "@/components/layout/navigation-layout"
+import { useAuth } from "@/lib/auth/AuthContext"
 
 // Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
@@ -50,7 +51,6 @@ export default function Dashboard() {
     totalProducts: 0,
     revenue: 0,
   })
-
   useEffect(() => {
     // Simulate API call to fetch dashboard data
     const fetchDashboardData = async () => {
@@ -77,7 +77,7 @@ export default function Dashboard() {
   }, [])
 
   return (
-    <DashboardLayout>
+    <NavigationLayout>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Dashboard
@@ -89,7 +89,7 @@ export default function Dashboard() {
 
       <Grid container spacing={3}>
         {/* Summary Cards */}
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3}}>
           <Paper
             elevation={3}
             sx={{
@@ -131,7 +131,7 @@ export default function Dashboard() {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3}}>
           <Paper
             elevation={3}
             sx={{
@@ -173,7 +173,7 @@ export default function Dashboard() {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3}}>
           <Paper
             elevation={3}
             sx={{
@@ -215,7 +215,7 @@ export default function Dashboard() {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3}}>
           <Paper
             elevation={3}
             sx={{
@@ -258,7 +258,7 @@ export default function Dashboard() {
         </Grid>
 
         {/* Sales Chart */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12}}>
           <Paper
             elevation={3}
             sx={{
@@ -289,7 +289,7 @@ export default function Dashboard() {
         </Grid>
 
         {/* Recent Orders and Top Products */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6}}>
           <Card elevation={3} sx={{ borderRadius: 2 }}>
             <CardHeader title="Recent Orders" />
             <Divider />
@@ -311,7 +311,7 @@ export default function Dashboard() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6}}>
           <Card elevation={3} sx={{ borderRadius: 2 }}>
             <CardHeader title="Top Selling Products" />
             <Divider />
@@ -333,6 +333,6 @@ export default function Dashboard() {
           </Card>
         </Grid>
       </Grid>
-    </DashboardLayout>
+    </NavigationLayout>
   )
 }

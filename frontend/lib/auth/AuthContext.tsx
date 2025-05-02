@@ -1,15 +1,19 @@
 'use client'
 
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import { ROLES, checkRoutePermission } from '@/lib/roles'
-import { API_ENDPOINTS, authFetch } from '../config'
+import { createContext, useContext, ReactNode, useState, useEffect, use } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { PUBLIC_ROUTES, checkRoutePermission } from '@/lib/roles'
+import { API_ENDPOINTS } from '../config'
+import { authFetch } from '../fetch'
+import { set } from 'date-fns'
 
 interface User {
   id: string
   email: string
-  name: string
-  roles: string[]
+  firstName: string,
+  lastName?: string,
+  avatar: string,
+  role: [string, ...string[]]
 }
 
 interface AuthContextType {
@@ -18,47 +22,29 @@ interface AuthContextType {
   error: string | null
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  setIsLoading: (loading: boolean) => void
   hasRole: (role: string) => boolean
-  checkAccess: (path?: string) => boolean
   clearError: () => void
+  canAccessRoute: (pathname: string) => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
-
-  // Verificar sesión al cargar
-  useEffect(() => {
-    if (['/login', '/unauthorized'].includes(pathname)) return;
-    if (!document.cookie.includes('access_token')) return;
-    const validateSession = async () => {
-      try {
-        const res = await authFetch(API_ENDPOINTS.AUTH.ME);
-        
-        if (res.ok) {
-          const userData = await res.json()
-          setUser(userData)
-        }
-      } catch (error) {
-        console.error('Session validation error:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    validateSession()
-  }, [pathname])
+  const searchParams = useSearchParams()
+  
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     setError(null)
     
     try {
+      console.log('Iniciando sesión...')
       const res = await authFetch(API_ENDPOINTS.AUTH.LOGIN, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,11 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const userData = await res.json()
+      console.log('User data:', userData)
       setUser(userData)
-      
-      // // Redirigir según roles después de login
-      // const redirectPath = userData.roles.includes(ROLES.ADMIN) ? '/admin' : '/dashboard'
-      // router.push(redirectPath)
+    
     } catch (err: any) {
       setError(err.message)
       throw err
@@ -85,19 +69,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = async () => {
-    await authFetch(API_ENDPOINTS.AUTH.LOGOUT, {
-      method: 'POST',
-    })
-    setUser(null)
-    router.push('/login')
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      await authFetch(API_ENDPOINTS.AUTH.LOGOUT, {
+        method: 'POST',
+      })
+      setUser(null)
+      router.push('/login')
+    } catch (err: any) {
+      setError(err.message)
+      throw err
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const canAccessRoute = (pathname: string): boolean => {
+    console.log('User canAccessRoute:', user)
+    if (!user) return false;
+    return checkRoutePermission(pathname, user.role);
   }
 
   const hasRole = (role: string) => {
-    return user?.roles.includes(role) ?? false
-  }
-
-  const checkAccess = (path = pathname) => {
-    return checkRoutePermission(path, user?.roles || [])
+    return user?.role.includes(role) ?? false
   }
 
   const clearError = () => setError(null)
@@ -109,8 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       error,
       login,
       logout,
+      setIsLoading,
+      canAccessRoute,
       hasRole,
-      checkAccess,
       clearError
     }}>
       {children}

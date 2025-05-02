@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -21,6 +21,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material"
 import { jwtDecode } from "jwt-decode"
 import { toast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth/AuthContext"
+import { checkRoutePermission } from "@/lib/roles"
 
 // Define the form schema with Zod
 const loginSchema = z.object({
@@ -31,11 +32,24 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
-  const { login } = useAuth()
+  const { login, isLoading, user } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
+  useEffect(() => {
+    if (user) {
+      const redirectPath = searchParams.get('redirect') || '/dashboard'
+      console.log('Redirecting to from login')
+      if (checkRoutePermission(redirectPath, user.role)) {
+        router.push(redirectPath)
+      } else {
+        router.push('/dashboard')
+      }
+    }
+  }, [user])
+  
   const {
     register,
     handleSubmit,
@@ -47,16 +61,14 @@ export default function LoginPage() {
       password: "",
     },
   })
+  
 
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data.email, data.password);
     } catch (err) {
-      toast({
-        title: "Error",
-        description: "Error al iniciar sesión. Por favor, verifica tus credenciales.",
-        variant: "destructive",
-      });
+      console.error("Login error:", err)
+      setError("Invalid email or password")
     }
   };
 
@@ -137,13 +149,13 @@ export default function LoginPage() {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2, py: 1.5 }}
-              disabled={loading}
+              disabled={isLoading}
               aria-label="Sign In"
             >
-              {loading ? <CircularProgress size={24} /> : "Sign In"}
+              {isLoading ? <CircularProgress size={24} /> : "Sign In"}
             </Button>
             <Typography variant="body2" color="text.secondary" align="center">
-              Demo credentials: admin@example.com / password123
+              Demo credentials: user@correo.com / password123
             </Typography>
           </Box>
         </Paper>

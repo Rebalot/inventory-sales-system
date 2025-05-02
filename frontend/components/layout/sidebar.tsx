@@ -21,6 +21,7 @@ import {
   ChevronLeft as ChevronLeftIcon,
   Logout as LogoutIcon,
 } from "@mui/icons-material"
+import { useAuth } from "@/lib/auth/AuthContext"
 
 const drawerWidth = 240
 
@@ -34,7 +35,7 @@ export default function Sidebar({ open, toggleDrawer }: SidebarProps) {
   const router = useRouter()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
-
+  const { logout } = useAuth()
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
     { text: "Inventory", icon: <InventoryIcon />, path: "/inventory" },
@@ -42,10 +43,8 @@ export default function Sidebar({ open, toggleDrawer }: SidebarProps) {
     { text: "Analytics", icon: <AnalyticsIcon />, path: "/analytics" },
   ]
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken")
-    localStorage.removeItem("userName")
-    router.push("/login")
+  const handleLogout = async () => {
+    await logout();
   }
 
   const handleNavigation = (path: string) => {

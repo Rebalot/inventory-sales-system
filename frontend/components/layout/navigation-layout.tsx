@@ -2,43 +2,24 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Box, Toolbar } from "@mui/material"
 import Header from "./header"
 import Sidebar from "./sidebar"
+import { useAuth } from "@/lib/auth/AuthContext"
 
-export default function DashboardLayout({
+export default function NavigationLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    // Check if user is authenticated
-    const token = localStorage.getItem("authToken")
-    if (!token) {
-      router.push("/login")
-    } else {
-      setIsAuthenticated(true)
-    }
-    setLoading(false)
-  }, [router])
-
+  const { user } = useAuth()
+  const isAuthenticated = !!user
+  console.log("User in NavigationLayout:", user)
   const toggleDrawer = () => {
     setOpen(!open)
-  }
-
-  if (loading) {
-    return null
-  }
-
-  if (!isAuthenticated) {
-    return null
   }
 
   return (

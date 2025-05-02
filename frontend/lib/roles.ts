@@ -2,27 +2,34 @@ export const ROLES = {
     ADMIN: 'admin',
     SALES: 'sales',
     INVENTORY: 'inventory',
-    ANALYTICS: 'analytics'
+    ANALYTICS: 'analytics',
+    USER: 'user'
   } as const
   
-  // 2. Mapeo de rutas a roles requeridos
-  export const ROUTE_PERMISSIONS = {
-    '/dashboard': [ROLES.ADMIN, ROLES.SALES, ROLES.INVENTORY, ROLES.ANALYTICS],
+  export const PROTECTED_ROUTES = {
+    '/dashboard': [ROLES.ADMIN, ROLES.SALES, ROLES.INVENTORY, ROLES.ANALYTICS, ROLES.USER],
     '/sales': [ROLES.ADMIN, ROLES.SALES],
     '/inventory': [ROLES.ADMIN, ROLES.INVENTORY],
     '/analytics': [ROLES.ADMIN, ROLES.ANALYTICS],
   }
-  
-  // 3. Helper para verificar permisos
-  export function checkRoutePermission(path: string, userRoles: string[] = []): boolean {
+  export const PUBLIC_ROUTES = [
+    '/login',
+    '/unauthorized',
+    '/not-found',
+  ]
+  export function getMatchedProtectedRoute(pathname: string) {
+    return Object.entries(PROTECTED_ROUTES).find(([route]) =>
+      pathname.startsWith(route)
+    );
+  }
+  export function checkRoutePermission(pathname: string, userRole: [string, ...string[]]): boolean {
     // Buscar la ruta más específica que coincida
-    const matchedRoute = Object.entries(ROUTE_PERMISSIONS)
-      .sort(([a], [b]) => b.length - a.length) // Ordenar de más específico a menos
-      .find(([route]) => path.startsWith(route))
+    const matchedEntry = getMatchedProtectedRoute(pathname);
+    if (!matchedEntry) return false;
+
+    const [matchedRoute, allowedRoles] = matchedEntry;
+    console.log('Ruta coincidente:', matchedRoute)
   
-    // Si no hay regla para esta ruta, permitir acceso
-    if (!matchedRoute) return true
-  
-    const [_, requiredRoles] = matchedRoute
-    return requiredRoles.some(role => userRoles.includes(role))
+    console.log('Roles permitidos:', allowedRoles)
+    return allowedRoles.some(role => userRole.includes(role));
   }

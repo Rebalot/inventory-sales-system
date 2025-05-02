@@ -27,7 +27,7 @@ import {
   Filler,
 } from "chart.js"
 import { Line, Bar, Pie } from "react-chartjs-2"
-import DashboardLayout from "@/components/layout/dashboard-layout"
+import NavigationLayout from "@/components/layout/navigation-layout"
 
 // Register ChartJS components
 ChartJS.register(
@@ -171,7 +171,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <DashboardLayout>
+    <NavigationLayout>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Analytics
@@ -201,7 +201,7 @@ export default function AnalyticsPage() {
 
       <Grid container spacing={3}>
         {/* Sales Trend Chart */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12}}>
           <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
             {loading ? (
               <Box sx={{ pt: 0.5 }}>
@@ -223,7 +223,7 @@ export default function AnalyticsPage() {
         </Grid>
 
         {/* Category Distribution */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6}}>
           <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
             {loading ? (
               <Box sx={{ pt: 0.5 }}>
@@ -245,7 +245,7 @@ export default function AnalyticsPage() {
         </Grid>
 
         {/* Customer Acquisition */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6}}>
           <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
             {loading ? (
               <Box sx={{ pt: 0.5 }}>
@@ -267,7 +267,7 @@ export default function AnalyticsPage() {
         </Grid>
 
         {/* Top Products */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12}}>
           <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
             {loading ? (
               <Box sx={{ pt: 0.5 }}>
@@ -289,7 +289,7 @@ export default function AnalyticsPage() {
         </Grid>
 
         {/* ELK Stack Integration */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12}}>
           <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
             {loading ? (
               <Box sx={{ pt: 0.5 }}>
@@ -334,6 +334,6 @@ export default function AnalyticsPage() {
           </Paper>
         </Grid>
       </Grid>
-    </DashboardLayout>
+    </NavigationLayout>
   )
 }

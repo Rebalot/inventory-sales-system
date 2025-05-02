@@ -31,7 +31,7 @@ import {
   Skeleton,
 } from "@mui/material"
 import { Search as SearchIcon, Visibility as ViewIcon, Receipt as ReceiptIcon } from "@mui/icons-material"
-import DashboardLayout from "@/components/layout/dashboard-layout"
+import NavigationLayout from "@/components/layout/navigation-layout"
 
 // Define order type
 interface Order {
@@ -151,7 +151,7 @@ export default function SalesPage() {
   })
 
   return (
-    <DashboardLayout>
+    <NavigationLayout>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Sales Management
@@ -320,19 +320,19 @@ export default function SalesPage() {
             </DialogTitle>
             <DialogContent>
               <Grid container spacing={2} sx={{ mb: 3, mt: 1 }}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6}}>
                   <Typography variant="subtitle2" color="text.secondary">
                     Customer
                   </Typography>
                   <Typography variant="body1">{selectedOrder.customer}</Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6}}>
                   <Typography variant="subtitle2" color="text.secondary">
                     Order Date
                   </Typography>
                   <Typography variant="body1">{selectedOrder.date}</Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6}}>
                   <Typography variant="subtitle2" color="text.secondary">
                     Status
                   </Typography>
@@ -350,7 +350,7 @@ export default function SalesPage() {
                     size="small"
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6}}>
                   <Typography variant="subtitle2" color="text.secondary">
                     Payment Method
                   </Typography>
@@ -401,6 +401,6 @@ export default function SalesPage() {
           </>
         )}
       </Dialog>
-    </DashboardLayout>
+    </NavigationLayout>
   )
 }

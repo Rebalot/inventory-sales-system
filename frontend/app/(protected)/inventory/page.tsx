@@ -36,7 +36,7 @@ import { Add as AddIcon, Search as SearchIcon, Edit as EditIcon, Delete as Delet
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import DashboardLayout from "@/components/layout/dashboard-layout"
+import NavigationLayout from "@/components/layout/navigation-layout"
 
 // Define product type
 interface Product {
@@ -235,7 +235,7 @@ export default function InventoryPage() {
   const categories = [...new Set(products.map((p) => p.category))]
 
   return (
-    <DashboardLayout>
+    <NavigationLayout>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Inventory Management
@@ -425,7 +425,7 @@ export default function InventoryPage() {
         <DialogContent>
           <Box component="form" noValidate sx={{ mt: 2 }}>
             <Grid container spacing={2}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12}}>
                 <Controller
                   name="name"
                   control={control}
@@ -441,7 +441,7 @@ export default function InventoryPage() {
                   )}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6}}>
                 <Controller
                   name="category"
                   control={control}
@@ -461,7 +461,7 @@ export default function InventoryPage() {
                   )}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6}}>
                 <Controller
                   name="sku"
                   control={control}
@@ -477,7 +477,7 @@ export default function InventoryPage() {
                   )}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6}}>
                 <Controller
                   name="price"
                   control={control}
@@ -498,7 +498,7 @@ export default function InventoryPage() {
                   )}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6}}>
                 <Controller
                   name="stock"
                   control={control}
@@ -526,6 +526,6 @@ export default function InventoryPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </DashboardLayout>
+    </NavigationLayout>
   )
 }
