@@ -31,21 +31,21 @@ export default function NotFound() {
           }}
         >
           <FileQuestion size={80} color="#f44336" />
-
+  
           <Typography variant="h2" component="h1" sx={{ mt: 4, fontWeight: "bold" }}>
             404
           </Typography>
-
+  
           <Typography variant="h4" component="h2" sx={{ mt: 2 }}>
-            Página no encontrada
+            Page Not Found
           </Typography>
-
+  
           <Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 4 }}>
-            Lo sentimos, la página que estás buscando no existe o ha sido movida.
+            Sorry, the page you’re looking for doesn’t exist or has been moved.
           </Typography>
-
-          <Button variant="contained" color="primary" component={Link} href="/login">
-            Volver al Inicio
+  
+          <Button variant="contained" color="primary" component={Link} href="/login" aria-label="Back to Home">
+            Back to Home
           </Button>
         </Paper>
       </Box>

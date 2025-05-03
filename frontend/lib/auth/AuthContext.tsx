@@ -17,11 +17,12 @@ export interface User {
 
 interface AuthContextType {
   user: User | null
+  isLoggingIn: boolean
+  isLoggingOut: boolean
   isLoading: boolean
   error: string | null
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
-  setIsLoading: (loading: boolean) => void
   clearError: () => void
   canAccessRoute: (pathname: string) => boolean
 }
@@ -30,7 +31,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoggingIn, setIsLoggingIn] = useState(true)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
@@ -49,15 +51,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         setUser(null)
       } finally {
-        setIsLoading(false)
+        setIsLoggingIn(false)
       }
     }
   
     fetchUser()
   }, [])
+  useEffect(() => {
+    if (!isLoggingOut) return;
+
+    if (pathname === '/login') {
+      setUser(null);
+    }
+  }, [isLoggingOut, pathname]);
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true)
+    setIsLoggingIn(true)
     setError(null)
     
     try {
@@ -80,27 +89,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(err.message)
       throw err
     } finally {
-      setIsLoading(false)
+      setIsLoggingIn(false)
     }
   }
 
   const logout = async () => {
-    setIsLoading(true)
+    setIsLoggingOut(true)
     setError(null)
     
     try {
       await authFetch(API_ENDPOINTS.AUTH.LOGOUT, {
         method: 'POST',
       })
-      router.replace('/login')
-      setTimeout(() => {
-        setUser(null);
-      }, 50);
+      router.replace('/login');
+      setIsLoggingOut(true);
     } catch (err: any) {
       setError(err.message)
       throw err
     } finally {
-      setIsLoading(false)
+      setIsLoggingOut(false)
     }
   }
 
@@ -115,11 +122,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user,
-      isLoading,
+      isLoggingIn,
+      isLoggingOut,
+      isLoading: isLoggingIn || isLoggingOut,
       error,
       login,
       logout,
-      setIsLoading,
       canAccessRoute,
       clearError
     }}>

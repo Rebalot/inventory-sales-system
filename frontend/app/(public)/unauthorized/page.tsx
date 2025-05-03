@@ -3,6 +3,7 @@
 import { useAuth } from "@/lib/auth/AuthContext"
 import { Box, Button, Container, Typography, Paper, CircularProgress } from "@mui/material"
 import { ShieldAlert } from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 
@@ -57,8 +58,8 @@ export default function Unauthorized() {
             {isLoading ? <CircularProgress size={22} color="inherit" /> : "Log in"}
             </Button>
 
-            <Button variant="outlined" onClick={() => router.back()} aria-label="Go back">
-              Go Back
+            <Button variant="outlined" component={Link} href="/login" aria-label="Back to Home">
+              Back to Home
             </Button>
           </Box>
         </Paper>

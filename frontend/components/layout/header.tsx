@@ -15,6 +15,7 @@ import {
   Tooltip,
   useMediaQuery,
   useTheme,
+  Skeleton,
 } from "@mui/material"
 import {
   Menu as MenuIcon,
@@ -35,7 +36,7 @@ export default function Header({ toggleDrawer }: HeaderProps) {
   const colorMode = useContext(ColorModeContext)
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const { user, logout, isLoading } = useAuth() as { user: User; logout: () => Promise<void>; isLoading: boolean }
+  const { user, logout } = useAuth() as { user: User; logout: () => Promise<void> }
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -79,7 +80,11 @@ export default function Header({ toggleDrawer }: HeaderProps) {
               aria-haspopup="true"
               aria-label="account of current user"
             >
-              <Avatar alt={"User avatar"} sx={{ width: 32, height: 32 }} src={user.avatar} />
+              {user ? (
+                <Avatar alt={"User avatar"} sx={{ width: 32, height: 32 }} src={user.avatar} />
+              ) : (
+                  <Skeleton variant="circular" width={40} height={40} />
+              )}
             </IconButton>
           </Tooltip>
 

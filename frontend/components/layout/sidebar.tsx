@@ -37,7 +37,7 @@ export default function Sidebar({ open, toggleDrawer }: SidebarProps) {
   const router = useRouter()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
-  const { user, logout, isLoading } = useAuth()
+  const { user, logout } = useAuth()
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
     { text: "Inventory", icon: <InventoryIcon />, path: "/inventory" },

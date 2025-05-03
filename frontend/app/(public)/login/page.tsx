@@ -32,7 +32,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
-  const { login, isLoading, user } = useAuth()
+  const { login, isLoggingIn, user } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
@@ -136,10 +136,10 @@ export default function LoginPage() {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2, py: 1.5 }}
-              disabled={isLoading}
+              disabled={isLoggingIn}
               aria-label="Sign In"
             >
-              {isLoading ? <CircularProgress size={24} /> : "Sign In"}
+              {isLoggingIn ? <CircularProgress size={24} /> : "Sign In"}
             </Button>
             <Typography variant="body2" color="text.secondary" align="center">
               Demo credentials: user@correo.com / password123
