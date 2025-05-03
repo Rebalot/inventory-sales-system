@@ -22,6 +22,8 @@ import {
   Logout as LogoutIcon,
 } from "@mui/icons-material"
 import { useAuth } from "@/lib/auth/AuthContext"
+import { PROTECTED_ROUTES } from "@/lib/roles"
+import { useMemo } from "react"
 
 const drawerWidth = 240
 
@@ -35,13 +37,20 @@ export default function Sidebar({ open, toggleDrawer }: SidebarProps) {
   const router = useRouter()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
-  const { logout } = useAuth()
+  const { user, logout, isLoading } = useAuth()
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
     { text: "Inventory", icon: <InventoryIcon />, path: "/inventory" },
     { text: "Sales", icon: <SalesIcon />, path: "/sales" },
     { text: "Analytics", icon: <AnalyticsIcon />, path: "/analytics" },
   ]
+
+  const filteredMenuItems = useMemo(() => {
+    return menuItems.filter(item => {
+      const allowedRoles = PROTECTED_ROUTES[item.path];
+      return user?.role.some(role => allowedRoles.includes(role));
+    });
+  }, [user]);
 
   const handleLogout = async () => {
     await logout();
@@ -82,7 +91,7 @@ export default function Sidebar({ open, toggleDrawer }: SidebarProps) {
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.map((item) => (
+        {filteredMenuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
             <ListItemButton
               selected={pathname === item.path}

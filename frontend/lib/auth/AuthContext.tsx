@@ -1,19 +1,18 @@
 'use client'
 
-import { createContext, useContext, ReactNode, useState, useEffect, use } from 'react'
+import { createContext, useContext, ReactNode, useState, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { PUBLIC_ROUTES, checkRoutePermission } from '@/lib/roles'
+import { Role, checkRoutePermission } from '@/lib/roles'
 import { API_ENDPOINTS } from '../config'
 import { authFetch } from '../fetch'
-import { set } from 'date-fns'
 
-interface User {
+export interface User {
   id: string
   email: string
   firstName: string,
   lastName?: string,
   avatar: string,
-  role: [string, ...string[]]
+  role: Role[]
 }
 
 interface AuthContextType {
@@ -23,7 +22,6 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   setIsLoading: (loading: boolean) => void
-  hasRole: (role: string) => boolean
   clearError: () => void
   canAccessRoute: (pathname: string) => boolean
 }
@@ -94,8 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authFetch(API_ENDPOINTS.AUTH.LOGOUT, {
         method: 'POST',
       })
-      setUser(null)
-      router.push('/login')
+      router.replace('/login')
+      setTimeout(() => {
+        setUser(null);
+      }, 50);
     } catch (err: any) {
       setError(err.message)
       throw err
@@ -110,10 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return checkRoutePermission(pathname, user.role);
   }
 
-  const hasRole = (role: string) => {
-    return user?.role.includes(role) ?? false
-  }
-
   const clearError = () => setError(null)
 
   return (
@@ -125,7 +121,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       setIsLoading,
       canAccessRoute,
-      hasRole,
       clearError
     }}>
       {children}

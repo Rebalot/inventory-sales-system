@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useContext, use, useEffect } from "react"
+import { useState, useContext } from "react"
 import {
   AppBar,
   Toolbar,
@@ -24,8 +24,7 @@ import {
 } from "@mui/icons-material"
 import { useRouter } from "next/navigation"
 import { ColorModeContext } from "@/app/ClientLayout"
-import { useAuth } from "@/lib/auth/AuthContext"
-import { get } from "http"
+import { useAuth, User } from "@/lib/auth/AuthContext"
 
 interface HeaderProps {
   toggleDrawer: () => void
@@ -36,24 +35,7 @@ export default function Header({ toggleDrawer }: HeaderProps) {
   const colorMode = useContext(ColorModeContext)
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const { user, logout } = useAuth()
-
-  // useEffect(() => {
-  //   const getName = (user: User) => {
-  //     if (user?.firstName && user?.lastName) {
-  //       return `${user.firstName} ${user.lastName}`
-  //     } else if (user?.firstName) {
-  //       return user.firstName
-  //     }
-  //     else if (user?.lastName) {
-  //       return user.lastName
-  //     }
-  //     return "Default Name"
-  //   }
-  // if (user) {
-  //   getName(user)
-  // }
-  // }, [user])
+  const { user, logout, isLoading } = useAuth() as { user: User; logout: () => Promise<void>; isLoading: boolean }
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -97,7 +79,7 @@ export default function Header({ toggleDrawer }: HeaderProps) {
               aria-haspopup="true"
               aria-label="account of current user"
             >
-              <Avatar alt={"User avatar"} sx={{ width: 32, height: 32 }} src={user?.avatar}/>
+              <Avatar alt={"User avatar"} sx={{ width: 32, height: 32 }} src={user.avatar} />
             </IconButton>
           </Tooltip>
 

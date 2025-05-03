@@ -41,7 +41,7 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
             router.replace(redirectPath);
         }
     }
-  }, [user]);
+}, [user]);
 
-  return <>{children}</>;
+return <>{children}</>;
 }

@@ -5,8 +5,10 @@ export const ROLES = {
     ANALYTICS: 'analytics',
     USER: 'user'
   } as const
-  
-  export const PROTECTED_ROUTES = {
+
+  export type Role = typeof ROLES[keyof typeof ROLES];
+
+  export const PROTECTED_ROUTES: Record<string, Role[]> = {
     '/dashboard': [ROLES.ADMIN, ROLES.SALES, ROLES.INVENTORY, ROLES.ANALYTICS, ROLES.USER],
     '/sales': [ROLES.ADMIN, ROLES.SALES],
     '/inventory': [ROLES.ADMIN, ROLES.INVENTORY],
@@ -28,7 +30,7 @@ export const ROLES = {
     const existsInPublic = isPublicRoute(pathname)
     return existsInProtected || existsInPublic
   }
-  export function checkRoutePermission(pathname: string, userRole: [string, ...string[]]): boolean {
+  export function checkRoutePermission(pathname: string, userRole: Role[]): boolean {
     // Buscar la ruta más específica que coincida
     const matchedEntry = Object.entries(PROTECTED_ROUTES).find(([route]) =>
       pathname.startsWith(route)
