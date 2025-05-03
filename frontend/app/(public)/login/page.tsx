@@ -36,20 +36,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
-  const searchParams = useSearchParams()
 
-  useEffect(() => {
-    if (user) {
-      const redirectPath = searchParams.get('redirect') || '/dashboard'
-      console.log('Redirecting to from login')
-      if (checkRoutePermission(redirectPath, user.role)) {
-        router.push(redirectPath)
-      } else {
-        router.push('/dashboard')
-      }
-    }
-  }, [user])
-  
   const {
     register,
     handleSubmit,

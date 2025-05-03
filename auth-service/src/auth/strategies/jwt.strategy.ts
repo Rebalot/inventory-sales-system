@@ -2,11 +2,15 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import { AuthService } from '../services/auth.service';
 
 //Valida el token cuando llega en una solicitud protegida.
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private config: ConfigService) {
+  constructor(
+    private config: ConfigService,
+    private authService: AuthService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request) => {
@@ -20,6 +24,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    return payload;
+    const user = await this.authService.validateUserById(payload.sub);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return user;
   }
 }

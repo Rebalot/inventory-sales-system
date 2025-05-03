@@ -8,6 +8,7 @@ import { Box, Toolbar } from "@mui/material"
 import Header from "./header"
 import Sidebar from "./sidebar"
 import { useAuth } from "@/lib/auth/AuthContext"
+import RequireAuth from "../RequireAuth"
 
 export default function NavigationLayout({
   children,
@@ -16,13 +17,13 @@ export default function NavigationLayout({
 }) {
   const [open, setOpen] = useState(false)
   const { user } = useAuth()
-  const isAuthenticated = !!user
-  console.log("User in NavigationLayout:", user)
+
   const toggleDrawer = () => {
     setOpen(!open)
   }
 
   return (
+
     <Box sx={{ display: "flex" }}>
       <Header toggleDrawer={toggleDrawer} />
       <Sidebar open={open} toggleDrawer={toggleDrawer} />
@@ -39,5 +40,6 @@ export default function NavigationLayout({
         {children}
       </Box>
     </Box>
+  
   )
 }

@@ -16,8 +16,15 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <ClientLayout>{children}</ClientLayout>
+  return (
+  <ClientLayout>
+    <RequireAuth>
+      {children}
+    </RequireAuth>
+  </ClientLayout>
+)
 }
 
 
 import './globals.css'
+import RequireAuth from "@/components/RequireAuth"

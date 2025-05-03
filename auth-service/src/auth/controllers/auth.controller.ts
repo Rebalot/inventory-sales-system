@@ -4,13 +4,18 @@ import { LoginDto } from '../dtos/login.dto';
 import { RegisterDto } from '../dtos/register.dto';
 import { Request, Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
+import { UserResponseDto } from '../dtos/user-response.dto';
 
-interface AuthenticatedRequest extends Request {
-  user: {
-    sub: string;
-    email: string;
-    role: string;
-  }
+export interface AuthenticatedRequest extends Request {
+  user: AuthenticatedUser;
+}
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName?: string;
+  avatar: string;
+  role: string;
 }
 @Controller('api/auth')
 export class AuthController {
@@ -18,13 +23,16 @@ export class AuthController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
-  getProfile(@Req() req: AuthenticatedRequest) {
+  getProfile(@Req() req: AuthenticatedRequest): UserResponseDto {
     const user = req.user; // Viene del token validado por AuthGuard
     console.log('Usuario autenticado:', user); // Agregado para depuración
     return {
-      id: user['sub'],
-      email: user['email'],
-      role: user['role'],
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      ...(user.lastName && { lastName: user.lastName }),
+      avatar: user.avatar,
+      role: user.role
     };
   }
 
@@ -35,7 +43,7 @@ export class AuthController {
   
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Res({ passthrough: true }) res: Response, @Body() loginDto: LoginDto) {
+  async login(@Res({ passthrough: true }) res: Response, @Body() loginDto: LoginDto): Promise<UserResponseDto> {
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     console.log('Usuario validado:', user); // Agregado para depuración
     if (!user) throw new UnauthorizedException('Invalid credentials');

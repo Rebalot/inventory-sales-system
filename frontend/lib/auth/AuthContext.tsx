@@ -32,12 +32,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      console.log('Fetching user...')
+      try {
+        const res = await authFetch(API_ENDPOINTS.AUTH.ME)
+        if (!res.ok) {
+          return setUser(null)
+        }
+        const data = await res.json()
+        setUser(data)
+      } catch {
+        setUser(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
   
+    fetchUser()
+  }, [])
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
@@ -57,7 +76,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const userData = await res.json()
-      console.log('User data:', userData)
       setUser(userData)
     
     } catch (err: any) {

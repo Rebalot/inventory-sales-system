@@ -17,10 +17,6 @@ export class RegisterDto extends LoginDto {
       })
     lastName?: string;
 
-    // @IsOptional()
-    // @IsString()
-    // avatarSeed?: string;
-
     @IsOptional()
     @Transform(({ value }) => 
         typeof value === 'string' ? [value] : value

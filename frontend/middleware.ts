@@ -1,28 +1,32 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { checkRoutePermission, getMatchedProtectedRoute, PUBLIC_ROUTES } from './lib/roles'
+import { checkRoutePermission, isPublicRoute, pathExists } from './lib/roles'
 import { API_ENDPOINTS } from './lib/config'
 
 export async function middleware(request: NextRequest) {
-
   const { pathname } = request.nextUrl
   if (pathname === '/') {
-    return NextResponse.redirect(new URL('/dashboard', request.url), 307)
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
   console.log('Ruta solicitada:', pathname) 
-  // 1. Rutas públicas (siempre accesibles)
-  // Comprobar si la ruta solicitada existe en la lista de rutas públicas
-  if (PUBLIC_ROUTES.some(path => pathname.startsWith(path))) {
+
+  if (isPublicRoute(pathname)) {
     console.log('Ruta pública, permitiendo acceso:', pathname)
     return NextResponse.next()
   }
-  // 2. Comprobar si la ruta solicitada existe en las rutas protegidas
-  // Si la ruta no es pública ni protegida, redirigir a /not-found
-  if (!getMatchedProtectedRoute(pathname)) {
+  if (!pathExists(pathname)) {
     console.log('Ruta no encontrada, redirigiendo a /not-found...')
     return NextResponse.redirect(new URL('/not-found', request.url), 307)
   }
 
+  const accessToken = request.cookies.get('access_token')?.value;
+  if (!accessToken) {
+    console.log('No hay token, redirigiendo a /login...');
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl, 307);
+  }
+  
   try {
     // 3. Verificar autenticación
     const authResponse = await fetch(API_ENDPOINTS.AUTH.ME, {
@@ -41,6 +45,7 @@ export async function middleware(request: NextRequest) {
 
     const user = await authResponse.json()
     console.log('Usuario autenticado:', user)
+    
     // 5. Verificar permisos de ruta
     const hasPermission = checkRoutePermission(pathname, user.role)
 

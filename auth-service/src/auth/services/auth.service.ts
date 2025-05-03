@@ -40,6 +40,9 @@ export class AuthService {
     }
     return null;
   }
+  async validateUserById(userId: string): Promise<User | null> {
+    return await this.userModel.findById(userId).exec();
+  }
 
   async login(user: User) {
     const payload = { email: user.email, sub: user._id, role: user.role };

@@ -17,14 +17,22 @@ export const ROLES = {
     '/unauthorized',
     '/not-found',
   ]
-  export function getMatchedProtectedRoute(pathname: string) {
-    return Object.entries(PROTECTED_ROUTES).find(([route]) =>
-      pathname.startsWith(route)
-    );
+  export function isPublicRoute(pathname: string) {
+    return PUBLIC_ROUTES.some(path => pathname.startsWith(path))
+  }
+  export function isProtectedRoute(pathname: string) {
+    return Object.keys(PROTECTED_ROUTES).some(path => pathname.startsWith(path))
+  }
+  export function pathExists(pathname: string) {
+    const existsInProtected = isProtectedRoute(pathname)
+    const existsInPublic = isPublicRoute(pathname)
+    return existsInProtected || existsInPublic
   }
   export function checkRoutePermission(pathname: string, userRole: [string, ...string[]]): boolean {
     // Buscar la ruta más específica que coincida
-    const matchedEntry = getMatchedProtectedRoute(pathname);
+    const matchedEntry = Object.entries(PROTECTED_ROUTES).find(([route]) =>
+      pathname.startsWith(route)
+    );;
     if (!matchedEntry) return false;
 
     const [matchedRoute, allowedRoles] = matchedEntry;
