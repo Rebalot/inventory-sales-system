@@ -3,8 +3,7 @@
 import { useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth/AuthContext';
-import { checkRoutePermission, isProtectedRoute, isPublicRoute, pathExists } from '@/lib/roles';
-import { red } from '@mui/material/colors';
+import { checkRoutePermission, isProtectedRoute, pathExists } from '@/lib/roles';
 
 export default function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -26,10 +25,15 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
                 router.replace('/not-found')
                 return
             }
+            if (redirectPath === '/login') {
+                console.log('User is already logged in, redirecting to dashboard...')
+                router.replace('/dashboard')
+                return
+            }
             const isAuthorized = checkRoutePermission(redirectPath, user.role)
             if (!isAuthorized) {
                 console.log('User does not have permission to access this route:', redirectPath)
-                router.replace('/dashboard')
+                router.replace('/unauthorized')
                 return
             }
             

@@ -10,6 +10,12 @@ export async function middleware(request: NextRequest) {
   }
   console.log('Ruta solicitada:', pathname) 
 
+  const accessToken = request.cookies.get('access_token')?.value;
+  
+  if(accessToken && pathname === '/login') {
+    console.log('Token encontrado y ruta es /login, redirigiendo a /dashboard...')
+    return NextResponse.redirect(new URL('/dashboard', request.url), 307)
+  }
   if (isPublicRoute(pathname)) {
     console.log('Ruta pública, permitiendo acceso:', pathname)
     return NextResponse.next()
@@ -19,14 +25,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/not-found', request.url), 307)
   }
 
-  const accessToken = request.cookies.get('access_token')?.value;
+  
   if (!accessToken) {
     console.log('No hay token, redirigiendo a /login...');
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl, 307);
   }
-  
+
   try {
     // 3. Verificar autenticación
     const authResponse = await fetch(API_ENDPOINTS.AUTH.ME, {

@@ -32,7 +32,7 @@ export const ROLES = {
     // Buscar la ruta más específica que coincida
     const matchedEntry = Object.entries(PROTECTED_ROUTES).find(([route]) =>
       pathname.startsWith(route)
-    );;
+    );
     if (!matchedEntry) return false;
 
     const [matchedRoute, allowedRoles] = matchedEntry;
