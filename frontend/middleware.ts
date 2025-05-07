@@ -40,6 +40,7 @@ export async function middleware(request: NextRequest) {
         Cookie: request.headers.get('cookie') || '', // reenviando la cookie que vino del navegador
       },
     })
+    console.log('Respuesta de autenticación:', authResponse.status, authResponse.statusText)
 
     // 4. Si no está autenticado, redirigir a login
     if (!authResponse.ok) {

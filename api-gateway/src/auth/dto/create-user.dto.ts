@@ -1,9 +1,16 @@
 import { ArrayNotEmpty, IsEmail, IsIn, IsOptional, IsString, Matches, MinLength } from 'class-validator';
-import { LoginDto } from './login.dto';
 import { Transform } from 'class-transformer';
+import { Role } from '../types/role.types';
 
 const namePattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñ]+(?: [A-Za-zÁÉÍÓÚáéíóúÑñ]+)*$/;
-export class RegisterDto extends LoginDto {
+export class CreateUserDto {
+    @IsEmail()
+    email!: string;
+
+    @IsString()
+    @MinLength(6)
+    password!: string;
+
     @IsString()
     @Matches(namePattern, {
         message: 'First name must be one or more words with only letters and single spaces',
@@ -22,7 +29,7 @@ export class RegisterDto extends LoginDto {
         typeof value === 'string' ? [value] : value
     )
     @IsString({ each: true })
-    @IsIn(['user', 'admin', 'sales', 'inventory', 'analysis'], { each: true })
+    @IsIn(['user', 'admin', 'sales', 'inventory', 'analytics'], { each: true })
     @ArrayNotEmpty()
-    role: string[] = ['user'];
+    role: Role[] = ['user'];
 }
