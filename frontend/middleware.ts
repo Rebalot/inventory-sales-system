@@ -4,23 +4,33 @@ import { checkRoutePermission, isPublicRoute, pathExists } from './lib/roles'
 import { API_ENDPOINTS } from './lib/config'
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-  if (pathname === '/') {
+  const currentPath = request.nextUrl.pathname
+  const previousPath = request.cookies.get('previousPath')?.value
+  console.log('Ruta anterior:', previousPath)
+  if (currentPath === '/') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
-  console.log('Ruta solicitada:', pathname) 
-
-  const accessToken = request.cookies.get('access_token')?.value;
+  console.log('Ruta solicitada:', currentPath) 
+  const response = NextResponse.next()
+  if (previousPath === currentPath) {
+    console.log('Mismo path que antes, no redirige')
+    return response
+  }
   
-  if(accessToken && pathname === '/login') {
+  response.cookies.set('previousPath', currentPath, {
+    path: '/',
+  })
+  const accessToken = request.cookies.get('access_token')?.value;
+
+  if(accessToken && currentPath === '/login') {
     console.log('Token encontrado y ruta es /login, redirigiendo a /dashboard...')
     return NextResponse.redirect(new URL('/dashboard', request.url), 307)
   }
-  if (isPublicRoute(pathname)) {
-    console.log('Ruta pública, permitiendo acceso:', pathname)
-    return NextResponse.next()
+  if (isPublicRoute(currentPath)) {
+    console.log('Ruta pública, permitiendo acceso:', currentPath)
+    return response
   }
-  if (!pathExists(pathname)) {
+  if (!pathExists(currentPath)) {
     console.log('Ruta no encontrada, redirigiendo a /not-found...')
     return NextResponse.redirect(new URL('/not-found', request.url), 307)
   }
@@ -29,7 +39,7 @@ export async function middleware(request: NextRequest) {
   if (!accessToken) {
     console.log('No hay token, redirigiendo a /login...');
     const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
+    loginUrl.searchParams.set('redirect', currentPath);
     return NextResponse.redirect(loginUrl, 307);
   }
 
@@ -41,12 +51,16 @@ export async function middleware(request: NextRequest) {
       },
     })
     console.log('Respuesta de autenticación:', authResponse.status, authResponse.statusText)
-
     // 4. Si no está autenticado, redirigir a login
     if (!authResponse.ok) {
       console.log('No autenticado, redirigiendo a /login...')
+      if(authResponse.status === 401) {
+        console.log('Token inválido, eliminando cookie...')
+        const logoutUrl = new URL('/logout', request.url);
+            return NextResponse.redirect(logoutUrl, 307);
+      }
       const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
+      loginUrl.searchParams.set('redirect', currentPath);
       return NextResponse.redirect(loginUrl, 307); // 307 Temporary Redirect
     }
 
@@ -54,7 +68,7 @@ export async function middleware(request: NextRequest) {
     console.log('Usuario autenticado:', user)
     
     // 5. Verificar permisos de ruta
-    const hasPermission = checkRoutePermission(pathname, user.role)
+    const hasPermission = checkRoutePermission(currentPath, user.role)
 
     // 6. Si no tiene permisos, redirigir
     if (!hasPermission) {
@@ -62,7 +76,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/unauthorized', request.url), 307)
     }
 
-    return NextResponse.next()
+    return response
   } catch (error) {
     console.error('Middleware error:', error)
     return NextResponse.redirect(new URL('/login', request.url), 307) // Redirigir a login en caso de error

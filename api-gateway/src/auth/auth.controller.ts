@@ -55,6 +55,7 @@ export class AuthController {
   }
   @Post('/logout')
   async logout(@Res({ passthrough: true }) res: Response) {
+    console.log('Logging out...');
     res.clearCookie('access_token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

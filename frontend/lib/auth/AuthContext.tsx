@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
       })
       router.replace('/login');
-      setIsLoggingOut(true);
+
     } catch (err: any) {
       setError(err.message)
       throw err

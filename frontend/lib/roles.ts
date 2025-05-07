@@ -16,6 +16,7 @@ export const ROLES = {
   }
   export const PUBLIC_ROUTES = [
     '/login',
+    '/logout',
     '/unauthorized',
     '/not-found',
   ]

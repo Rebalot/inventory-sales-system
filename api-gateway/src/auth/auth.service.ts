@@ -12,15 +12,32 @@ export class AuthService {
   ) {}
 
   async validateToken(token: string): Promise<AuthenticatedUser> {
-    return firstValueFrom(
+    try{
+    return await firstValueFrom(
       this.authClient.send('auth.validate_token', token),
     );
-  
+  }catch (error: any) {
+    console.error('Error auth.service:', error);
+    const message = error?.message || error?.error?.message;
+    if (message) {
+      throw new BadRequestException(message); // HTTP 400
+    }
+    throw new InternalServerErrorException('Unexpected error while creating user');
+  }
   }
   async login(loginData: LoginDto): Promise<AuthenticatedUserWithToken> {
-    return firstValueFrom(
+    try{
+    return await firstValueFrom(
       this.authClient.send('auth.login', loginData),
     );
+  }catch (error: any) {
+    console.error('Error auth.service:', error);
+    const message = error?.message || error?.error?.message;
+    if (message) {
+      throw new BadRequestException(message); // HTTP 400
+    }
+    throw new InternalServerErrorException('Unexpected error while logging in');
+  }
   }
   async createUser(userData: CreateUserDto): Promise<AuthenticatedUser> {
     try{
@@ -28,9 +45,11 @@ export class AuthService {
       this.authClient.send('user.create', userData),
     );
     }catch (error: any) {
-      if (error?.error?.message) {
-        throw new BadRequestException(error.message); // HTTP 400
-      }
+      console.error('Error auth.service:', error);
+      const message = error?.message || error?.error?.message;
+    if (message) {
+      throw new BadRequestException(message); // HTTP 400
+    }
       throw new InternalServerErrorException('Unexpected error while creating user');
     }
   }
