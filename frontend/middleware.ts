@@ -53,12 +53,12 @@ export async function middleware(request: NextRequest) {
     console.log('Respuesta de autenticación:', authResponse.status, authResponse.statusText)
     // 4. Si no está autenticado, redirigir a login
     if (!authResponse.ok) {
-      console.log('No autenticado, redirigiendo a /login...')
       if(authResponse.status === 401) {
         console.log('Token inválido, eliminando cookie...')
         const logoutUrl = new URL('/logout', request.url);
-            return NextResponse.redirect(logoutUrl, 307);
+        return NextResponse.redirect(logoutUrl, 307);
       }
+      console.log('No autenticado, redirigiendo a /login...')
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', currentPath);
       return NextResponse.redirect(loginUrl, 307); // 307 Temporary Redirect

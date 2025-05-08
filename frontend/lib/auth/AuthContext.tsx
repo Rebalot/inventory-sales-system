@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Role, checkRoutePermission } from '@/lib/roles'
 import { API_ENDPOINTS } from '../config'
 import { authFetch } from '../fetch'
@@ -36,7 +36,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -48,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         const data = await res.json()
         setUser(data)
-      } catch {
+      } catch(error: any) {
         setUser(null)
       } finally {
         setIsLoggingIn(false)
