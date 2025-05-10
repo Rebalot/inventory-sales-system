@@ -13,7 +13,7 @@ import {
     
         async canActivate(context: ExecutionContext): Promise<boolean> {
         const request: Request = context.switchToHttp().getRequest();
-        const token = request.cookies?.['access_token'];
+        const token = request.cookies?.['session'];
         if (!token) {
             throw new UnauthorizedException('Token missing');
         }

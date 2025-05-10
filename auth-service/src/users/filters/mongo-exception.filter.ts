@@ -12,7 +12,7 @@ import { throwError } from 'rxjs';
     catch(exception: MongoServerError, host: ArgumentsHost) {
         
       const errorResponse = {
-        mongoServerCode: exception.code,
+        mongoErrorCode: exception.code,
         message: exception.errmsg,
       }
 

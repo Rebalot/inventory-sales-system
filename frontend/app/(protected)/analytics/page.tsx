@@ -27,7 +27,7 @@ import {
   Filler,
 } from "chart.js"
 import { Line, Bar, Pie } from "react-chartjs-2"
-import NavigationLayout from "@/components/layout/navigation-layout"
+import NavigationLayout from "@/components/navigation/NavigationLayout"
 
 // Register ChartJS components
 ChartJS.register(
@@ -171,7 +171,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <NavigationLayout>
+    <>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Analytics
@@ -334,6 +334,6 @@ export default function AnalyticsPage() {
           </Paper>
         </Grid>
       </Grid>
-    </NavigationLayout>
+      </>
   )
 }

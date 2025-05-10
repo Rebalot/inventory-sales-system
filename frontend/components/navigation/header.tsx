@@ -25,7 +25,10 @@ import {
 } from "@mui/icons-material"
 import { useRouter } from "next/navigation"
 import { ColorModeContext } from "@/app/ClientLayout"
-import { useAuth, User } from "@/lib/auth/AuthContext"
+import { useAuth } from "@/lib/auth-context"
+import { log } from "console"
+
+
 
 interface HeaderProps {
   toggleDrawer: () => void
@@ -36,7 +39,7 @@ export default function Header({ toggleDrawer }: HeaderProps) {
   const colorMode = useContext(ColorModeContext)
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const { user, logout } = useAuth() as { user: User; logout: () => Promise<void> }
+  const { user, logout } = useAuth()
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -47,7 +50,12 @@ export default function Header({ toggleDrawer }: HeaderProps) {
   }
 
   const handleLogout = async () => {
-    await logout()
+    try{
+      await logout()
+      router.push("/login")
+    }catch (error) {
+      console.error("Logout error", error)
+    }
   }
 
   return (

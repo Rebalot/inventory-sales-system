@@ -5,8 +5,6 @@ import { Box, Grid, Paper, Typography, Card, CardContent, CardHeader, Divider, S
 import { AttachMoney, Inventory, ShoppingCart, TrendingUp } from "@mui/icons-material"
 import { Bar } from "react-chartjs-2"
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js"
-import NavigationLayout from "@/components/layout/navigation-layout"
-import { useAuth } from "@/lib/auth/AuthContext"
 
 // Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
@@ -77,7 +75,7 @@ export default function Dashboard() {
   }, [])
 
   return (
-    <NavigationLayout>
+    <>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Dashboard
@@ -333,6 +331,6 @@ export default function Dashboard() {
           </Card>
         </Grid>
       </Grid>
-    </NavigationLayout>
+    </>
   )
 }

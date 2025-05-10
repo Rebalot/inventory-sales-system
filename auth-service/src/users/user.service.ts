@@ -3,8 +3,7 @@ import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreateUserPayload } from './types/create-user.types';
-import { RpcException } from '@nestjs/microservices';
+import { CreateUserPayload } from './types/create-user';
 
 @Injectable()
 export class UsersService {

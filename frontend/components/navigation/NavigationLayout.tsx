@@ -1,22 +1,13 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Box, Toolbar } from "@mui/material"
 import Header from "./header"
 import Sidebar from "./sidebar"
-import { useAuth } from "@/lib/auth/AuthContext"
-import RequireAuth from "../RequireAuth"
 
-export default function NavigationLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function NavigationLayout({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
-  const { user } = useAuth()
 
   const toggleDrawer = () => {
     setOpen(!open)
@@ -25,7 +16,7 @@ export default function NavigationLayout({
   return (
 
     <Box sx={{ display: "flex" }}>
-      <Header toggleDrawer={toggleDrawer} />
+      <Header toggleDrawer={toggleDrawer}/>
       <Sidebar open={open} toggleDrawer={toggleDrawer} />
       <Box
         component="main"

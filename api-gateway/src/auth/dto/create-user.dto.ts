@@ -1,6 +1,6 @@
 import { ArrayNotEmpty, IsEmail, IsIn, IsOptional, IsString, Matches, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { Role } from '../types/role.types';
+import { Role } from '../types/role';
 
 const namePattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñ]+(?: [A-Za-zÁÉÍÓÚáéíóúÑñ]+)*$/;
 export class CreateUserDto {

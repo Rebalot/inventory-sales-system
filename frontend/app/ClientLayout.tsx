@@ -7,7 +7,8 @@ import { ThemeProvider, createTheme } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
 import { useState, useEffect, createContext, useMemo } from "react"
 import Box from "@mui/material/Box"
-import { AuthProvider } from "@/lib/auth/AuthContext"
+import { AuthProvider } from "@/lib/auth-context"
+
 
 const inter = Inter({ subsets: ["latin"] })
 

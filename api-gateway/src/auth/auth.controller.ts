@@ -2,13 +2,12 @@ import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common
 import { Request, Response } from 'express';
 import { HttpAuthGuard } from './guards/http-auth.guard';
 import { AuthService } from './auth.service';
-import { AuthenticatedUser } from './types/autenticated-user.types';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { RpcException } from '@nestjs/microservices';
+import { User } from './types/user';
 
 interface AuthenticatedRequest extends Request {
-  user: AuthenticatedUser;
+  user: User;
 }
 
 @Controller('api/auth')
@@ -36,27 +35,20 @@ export class AuthController {
   }
 
   @Post('/login')
-  async login(@Body() loginData: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const user = await this.authService.login(loginData);
-    res.cookie('access_token', user.access_token, {
+  async login(@Body() loginPayload: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const token = await this.authService.login(loginPayload);
+    res.cookie('session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // solo en HTTPS si es true
       sameSite: 'lax', // permite el envío de cookies en solicitudes de origen cruzado
       maxAge: 1000 * 60 * 60 * 1, // 1 hora
     });
-    return {
-      _id: user._id,
-      email: user.email,
-      firstName: user.firstName,
-      ...(user.lastName && { lastName: user.lastName }),
-      avatar: user.avatar,
-      role: user.role,
-    };
+    return token;
   }
   @Post('/logout')
   async logout(@Res({ passthrough: true }) res: Response) {
     console.log('Logging out...');
-    res.clearCookie('access_token', {
+    res.clearCookie('session', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

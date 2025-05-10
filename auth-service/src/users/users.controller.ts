@@ -1,7 +1,7 @@
 import { Controller, UseFilters } from "@nestjs/common";
 import { UsersService } from "./user.service";
 import { MessagePattern, Payload, RpcException } from "@nestjs/microservices";
-import { CreatedUser, CreateUserPayload } from "./types/create-user.types";
+import { CreatedUser, CreateUserPayload } from "./types/create-user";
 import { MongoExceptionFilter } from "./filters/mongo-exception.filter";
 
 @Controller()

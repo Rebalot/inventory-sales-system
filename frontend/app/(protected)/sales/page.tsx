@@ -31,7 +31,7 @@ import {
   Skeleton,
 } from "@mui/material"
 import { Search as SearchIcon, Visibility as ViewIcon, Receipt as ReceiptIcon } from "@mui/icons-material"
-import NavigationLayout from "@/components/layout/navigation-layout"
+import NavigationLayout from "@/components/navigation/NavigationLayout"
 
 // Define order type
 interface Order {
@@ -151,7 +151,7 @@ export default function SalesPage() {
   })
 
   return (
-    <NavigationLayout>
+    <>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Sales Management
@@ -401,6 +401,6 @@ export default function SalesPage() {
           </>
         )}
       </Dialog>
-    </NavigationLayout>
+    </>
   )
 }

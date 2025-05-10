@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -18,10 +18,8 @@ import {
   CircularProgress,
 } from "@mui/material"
 import { Visibility, VisibilityOff } from "@mui/icons-material"
-import { jwtDecode } from "jwt-decode"
-import { toast } from "@/hooks/use-toast"
-import { useAuth } from "@/lib/auth/AuthContext"
-import { checkRoutePermission } from "@/lib/roles"
+import { useAuth } from "@/lib/auth-context"
+
 
 // Define the form schema with Zod
 const loginSchema = z.object({
@@ -32,11 +30,13 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
-  const { login, isLoggingIn, user } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState("")
   const router = useRouter()
-
+  const { login, error, isLoggingIn } = useAuth()
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
+  const redirectPath = redirect ? redirect : pathname
   const {
     register,
     handleSubmit,
@@ -51,13 +51,11 @@ export default function LoginPage() {
   
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      await login(data.email, data.password);
-    } catch (err) {
-      console.error("Login error:", err)
-      setError("Invalid email or password")
-    }
-  };
+      const success = await login(data.email, data.password)
+      if (success) {
+        router.push(redirectPath)
+      }
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -139,7 +137,7 @@ export default function LoginPage() {
               disabled={isLoggingIn}
               aria-label="Sign In"
             >
-              {isLoggingIn ? <CircularProgress size={24} /> : "Sign In"}
+              Sign In
             </Button>
             <Typography variant="body2" color="text.secondary" align="center">
               Demo credentials: user@correo.com / password123

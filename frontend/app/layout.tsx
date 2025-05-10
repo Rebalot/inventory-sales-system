@@ -18,13 +18,10 @@ export default function RootLayout({
 }) {
   return (
   <ClientLayout>
-    <RequireAuth>
       {children}
-    </RequireAuth>
   </ClientLayout>
 )
 }
 
 
 import './globals.css'
-import RequireAuth from "@/components/RequireAuth"

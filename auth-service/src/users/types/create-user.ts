@@ -1,4 +1,4 @@
-import { Role } from "./role.types";
+import { Role } from "./role";
 
 export interface CreateUserPayload {
     email: string;

@@ -1,7 +1,6 @@
-import { Role } from "src/users/types/role.types";
+import { Role } from "./role";
 
-
-export interface AuthenticatedUser {
+export interface User {
     _id: string;
     email: string;
     firstName: string;
