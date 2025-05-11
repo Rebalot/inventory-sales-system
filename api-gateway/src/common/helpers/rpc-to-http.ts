@@ -19,12 +19,14 @@ export const rpcToHttpStatusMap: Record<number, number> = {
     15: 500, // DATA_LOSS
     16: 401, // UNAUTHENTICATED
   };
-  export function mapRpcToHttp(error: any): HttpException {
 
-    const statusCode = typeof error === 'object' && error.status ? error.status : 500;
-    const message = typeof error === 'object' && error.message ? error.message : 'Unexpected microservice error';
+export function mapRpcToHttp(error: any): HttpException {
+  const code = error?.code;
+  const details = error?.details || 'Unexpected microservice error';
 
-    const httpStatus = rpcToHttpStatusMap[statusCode];
-    return new HttpException(message, httpStatus);
+  const httpStatus = rpcToHttpStatusMap[code] || 500;
 
-  }
+  console.log('RPC → HTTP:', code, details, httpStatus);
+
+  return new HttpException(details, httpStatus);
+}

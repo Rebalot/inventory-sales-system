@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { User } from './types/user'
+import { User } from './types/user.interface'
 import { API_ENDPOINTS } from './config'
 import { usePathname } from 'next/navigation'
 
@@ -71,22 +71,23 @@ const [isLoggingOut, setLoggingOut] = useState(false)
         body: JSON.stringify({ email, password }),
         })
         if (!res.ok) {
-            const errorData = await res.json().catch(() => ({}))
-            console.error('Login error:', errorData)
-            throw new Error(errorData.message || 'Invalid credentialszzz')
-          }
-      
-          const userRes = await fetch(API_ENDPOINTS.AUTH.ME, {
-            credentials: 'include',
-          })
-      
-          if (!userRes.ok) {
-            throw new Error('Failed to fetch user data after login')
-          }
-      
-          const data = await userRes.json()
-          setUser(data)
-          return true
+          const errorData = await res.json().catch(() => ({}))
+          console.error('Login error:', errorData)
+          throw new Error(errorData.message || 'Invalid credentials')
+        }
+    
+        const userRes = await fetch(API_ENDPOINTS.AUTH.ME, {
+          credentials: 'include',
+        })
+    
+        if (!userRes.ok) {
+          throw new Error('Failed to fetch user data after login')
+        }
+    
+        const data = await userRes.json()
+        setUser(data)
+        return true
+        
         } catch (err: any) {
           console.error('Login error:', err)
           setError(err.message || 'An error occurred during login')

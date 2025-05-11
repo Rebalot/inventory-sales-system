@@ -5,7 +5,7 @@ import {
     UnauthorizedException,
     } from '@nestjs/common';
     import { Request } from 'express';
-    import { AuthService } from '../auth.service'; // Asegúrate de que la ruta sea correcta
+    import { AuthService } from '../services/auth.service'; // Asegúrate de que la ruta sea correcta
 
     @Injectable()
     export class HttpAuthGuard implements CanActivate {
@@ -14,6 +14,7 @@ import {
         async canActivate(context: ExecutionContext): Promise<boolean> {
         const request: Request = context.switchToHttp().getRequest();
         const token = request.cookies?.['session'];
+
         if (!token) {
             throw new UnauthorizedException('Token missing');
         }

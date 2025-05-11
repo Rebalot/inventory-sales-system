@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UsersService } from '../users/user.service';
-import { UserDocument } from '../users/schemas/user.schema';
-import { rpcError, RpcStatus } from 'src/common/exceptions/rpc-exception.util';
+import { UserService } from '../user/user.service';
+import { UserDocument } from '../user/schemas/user.schema';
+import { rpcError } from 'src/common/exceptions/rpc-exception.util';
+import { status } from '@grpc/grpc-js';
 
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -21,24 +22,23 @@ export class AuthService {
     };
     const token = this.jwtService.sign(payload);
     if (!token) {
-      throw rpcError(RpcStatus.INTERNAL, 'Token generation failed');
+      throw rpcError(status.INTERNAL, 'Token generation failed');
     }
     return token;
   }
 
   async validateUser(email: string, password: string): Promise<UserDocument> {	
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.userService.findByEmail(email);
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw rpcError(RpcStatus.UNAUTHENTICATED, 'Invalid credentials');
+      throw rpcError(status.UNAUTHENTICATED, 'Invalid credentials');
     }
     return user;
   }
 
   async validateToken(token: string): Promise<UserDocument> {
       const decoded = this.jwtService.verify(token);
-
-      const user = await this.usersService.findById(decoded.sub);
-      if (!user) throw rpcError(RpcStatus.UNAUTHENTICATED, 'Unauthorized');
+      const user = await this.userService.findById(decoded.sub);
+      if (!user) throw rpcError(status.UNAUTHENTICATED, 'Unauthorized');
 
       return user;
   }

@@ -65,8 +65,8 @@ export default function Unauthorized() {
             Log in
             </Button>
 
-            <Button variant="outlined" component={Link} href="/login" aria-label="Go to Dashboard" color="secondary">
-              Go to Dashboard
+            <Button variant="outlined" component={Link} href="/login" aria-label="Back to Home" color="secondary">
+              Back to Home
             </Button>
           </Box>
         </Paper>
