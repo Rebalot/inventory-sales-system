@@ -9,7 +9,7 @@ import { status } from "@grpc/grpc-js";
 export class UserGrpcController {
   constructor(private readonly usersService: UserService) {}
 
-  @GrpcMethod('UsersService', 'Create')
+  @GrpcMethod('UserService', 'Create')
   @UseFilters(MongoExceptionFilter)
   async create(userData: any): Promise<any> {
     const user = await this.usersService.create(userData);
@@ -26,7 +26,7 @@ export class UserGrpcController {
     };
   }
 
-  @GrpcMethod('UsersService', 'FindByEmail')
+  @GrpcMethod('UserService', 'FindByEmail')
   async findByEmail({ email }: { email: string }): Promise<any> {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw rpcError(status.NOT_FOUND, 'User not found');

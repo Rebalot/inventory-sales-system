@@ -8,7 +8,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { mapRpcToHttp } from 'src/common/helpers/rpc-to-http';
 
 interface GrpcService {
-  createUser(userData: CreateUserDto): Observable<any>;
+  create(userData: CreateUserDto): Observable<any>;
 }
 
 @Injectable()
@@ -23,9 +23,10 @@ export class UserService implements OnModuleInit {
     async createUser(userData: CreateUserDto) {
         try {
         return await firstValueFrom(
-            this.grpcService.createUser(userData).pipe(timeout(3000)),
+            this.grpcService.create(userData).pipe(timeout(3000)),
         );
         } catch (error: any) {
+            console.error('Error en UserService:', error);
         this.handleError(error);
         }
     }

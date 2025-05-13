@@ -15,7 +15,7 @@ import { throwError } from 'rxjs';
         mongoErrorCode: exception.code,
         message: exception.errmsg,
       }
-
+      console.error('MongoDB Error:', errorResponse);
     // Retornar directamente una RpcException como Observable
     return throwError(() => new RpcException(errorResponse));
   }
