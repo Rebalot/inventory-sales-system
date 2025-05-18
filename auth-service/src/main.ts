@@ -15,7 +15,7 @@ async function bootstrap() {
         join(__dirname, '../src/common/proto/auth.proto'),
         join(__dirname, '../src/common/proto/user.proto'),
       ],
-      url: '0.0.0.0:50051',
+      url: `0.0.0.0:${process.env.GRPC_PORT  || '50051'}`,
     },
   });
 

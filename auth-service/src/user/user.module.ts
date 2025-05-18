@@ -1,4 +1,4 @@
-import { UserGrpcController } from "./grpc/user.grpc.controller";
+import { UserGrpcController } from "./controllers/user.grpc.controller";
 import { UserService } from "./user.service";
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";

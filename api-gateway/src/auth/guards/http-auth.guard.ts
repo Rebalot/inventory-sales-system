@@ -14,7 +14,7 @@ import {
         async canActivate(context: ExecutionContext): Promise<boolean> {
         const request: Request = context.switchToHttp().getRequest();
         const token = request.cookies?.['session'];
-
+        console.log('Token en HttpAuthGuard');
         if (!token) {
             throw new UnauthorizedException('Token missing');
         }

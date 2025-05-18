@@ -1,6 +1,6 @@
 import { Role } from "./role.type";
 
-export interface CreateUserPayload {
+export interface UserPayload {
     email: string;
     password: string;
     firstName: string;
@@ -8,7 +8,7 @@ export interface CreateUserPayload {
     role: Role[];
   }
 
-export interface CreatedUser {
+export interface User {
     _id: string;
     email: string;
     firstName: string;

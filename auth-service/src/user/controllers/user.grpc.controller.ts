@@ -4,6 +4,7 @@ import { GrpcMethod } from "@nestjs/microservices";
 import { MongoExceptionFilter } from "../filters/mongo-exception.filter";
 import { rpcError } from "src/common/exceptions/rpc-exception.util";
 import { status } from "@grpc/grpc-js";
+import { User, UserPayload } from "../types/user.interface";
 
 @Controller()
 export class UserGrpcController {
@@ -11,8 +12,8 @@ export class UserGrpcController {
 
   @GrpcMethod('UserService', 'Create')
   @UseFilters(MongoExceptionFilter)
-  async create(userData: any): Promise<any> {
-    const user = await this.usersService.create(userData);
+  async create(userData: UserPayload): Promise<User> {
+    const user = await this.usersService.createUser(userData);
     if (!user) {
       throw rpcError(status.INTERNAL, 'User creation failed');
     }
@@ -27,7 +28,7 @@ export class UserGrpcController {
   }
 
   @GrpcMethod('UserService', 'FindByEmail')
-  async findByEmail({ email }: { email: string }): Promise<any> {
+  async findByEmail({ email }: { email: string }): Promise<User> {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw rpcError(status.NOT_FOUND, 'User not found');
     return {
@@ -41,7 +42,7 @@ export class UserGrpcController {
   }
 
   @GrpcMethod('UsersService', 'FindById')
-  async findById({ id }: { id: string }): Promise<any> {
+  async findById({ id }: { id: string }): Promise<User> {
     const user = await this.usersService.findById(id);
     if (!user) throw rpcError(status.NOT_FOUND, 'User not found');
     return {

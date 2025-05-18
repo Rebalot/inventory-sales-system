@@ -18,6 +18,6 @@ export const ROLES = {
     '/login',
     '/logout',
     '/unauthorized',
-    '/not-found',
+    '/not-found'
   ]
   

@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package product;
+
+service ProductService {
+  rpc Get (QueryParams) returns (Products);
+  rpc Create (ProductPayload) returns (Product);
+  rpc Update (Product) returns (Product);
+  rpc Delete (Id) returns (DeleteResponse);
+}
+
+message ProductPayload {
+  string name = 1;
+  string category = 2;
+  float price = 3;
+  int32 stock = 4;
+  string sku = 5;
+}
+
+message Product {
+  string id = 1;
+  string name = 2;
+  string category = 3;
+  float price = 4;
+  int32 stock = 5;
+  string sku = 6;
+}
+
+message QueryParams {
+  int32 page = 1;
+  int32 limit = 2;
+  string search = 3;
+  string status = 4;
+  string category = 5;
+}
+
+message Products {
+  repeated Product items = 1;
+  int32 totalItems = 2;
+  int32 totalPages = 3;
+  int32 currentPage = 4;
+}
+
+message Id {
+  string id = 1;
+}
+
+message DeleteResponse {
+  string message = 1;
+}

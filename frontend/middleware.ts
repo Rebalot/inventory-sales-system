@@ -13,11 +13,13 @@ export default async function middleware(req: NextRequest) {
   if(currentPath === '/'){
     return NextResponse.redirect(new URL('/dashboard', req.nextUrl))
   }
+  console.log('Ruta actual:', currentPath)
+
   if (!pathExists(currentPath)) {
     console.log('Ruta no encontrada, redirigiendo a /not-found...')
     return NextResponse.redirect(new URL('/not-found', req.url), 307)
   }
-  console.log('Ruta actual:', currentPath)
+  
   response.cookies.set('previousPath', currentPath, {
     path: '/',
   })
@@ -61,5 +63,5 @@ export default async function middleware(req: NextRequest) {
 
 // Routes Middleware should not run on
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+  matcher: ["/((?!_next|favicon\\.ico|api|images|static).*)"],
 }

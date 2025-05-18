@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AuthGrpcController } from './grpc/auth.grpc.controller';
+import { AuthGrpcController } from './controllers/auth.grpc.controller';
 import { AuthService } from './auth.service';
 import { UserModule } from 'src/user/user.module';
 import { JwtModule } from '@nestjs/jwt';

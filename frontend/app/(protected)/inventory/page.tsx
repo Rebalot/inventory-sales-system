@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useLayoutEffect } from "react"
 import {
   Box,
   Typography,
@@ -37,44 +37,31 @@ import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import NavigationLayout from "@/components/navigation/NavigationLayout"
-
+import { API_ENDPOINTS } from "@/lib/config"
+import useSWR, { mutate } from "swr"
+import { TablePaginationActions } from "@/components/table/tablePagination"
+import { set } from "date-fns"
 // Define product type
+export enum Category {
+  Electronics = "Electronics",
+  Clothing = "Clothing",
+  Home = "Home",
+  Office = "Office",
+  Food = "Food"
+}
 interface Product {
   id: string
   name: string
-  category: string
+  category: Category
   price: number
   stock: number
   status: "In Stock" | "Low Stock" | "Out of Stock"
   sku: string
 }
 
-// Mock data for products
-const mockProducts: Product[] = Array.from({ length: 50 }, (_, i) => {
-  const stock = Math.floor(Math.random() * 100)
-  let status: "In Stock" | "Low Stock" | "Out of Stock"
-
-  if (stock === 0) {
-    status = "Out of Stock"
-  } else if (stock < 10) {
-    status = "Low Stock"
-  } else {
-    status = "In Stock"
-  }
-
-  return {
-    id: `PRD-${1000 + i}`,
-    name: `Product ${i + 1}`,
-    category: ["Electronics", "Clothing", "Home", "Office", "Food"][Math.floor(Math.random() * 5)],
-    price: Number.parseFloat((Math.random() * 1000 + 10).toFixed(2)),
-    stock,
-    status,
-    sku: `SKU-${10000 + i}`,
-  }
-})
-
 // Define form schema with Zod
 const productSchema = z.object({
+  id: z.string(),
   name: z.string().min(3, { message: "Name must be at least 3 characters" }),
   category: z.string().min(1, { message: "Category is required" }),
   price: z.number().positive({ message: "Price must be positive" }),
@@ -86,15 +73,48 @@ type ProductFormData = z.infer<typeof productSchema>
 
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState<string>("")
-  const [statusFilter, setStatusFilter] = useState<string>("")
   const [openDialog, setOpenDialog] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [successMessage, setSuccessMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
+  const rowRef = useRef<HTMLTableRowElement>(null);
+  const [rowHeight, setRowHeight] = useState<number>(67);
+  const categories = Object.values(Category);
+
+  useLayoutEffect(() => {
+    if (rowRef.current) {
+      const height = rowRef.current.getBoundingClientRect().height;
+      if (height) setRowHeight(height);
+    }
+  }, [products]);
+
+  const [query, setQuery] = useState({
+  page: 0,
+  limit: 10,
+  search: "",
+  category: "",
+  status: "",
+});
+  
+  const queryParams = {
+  page: String(query.page),
+  limit: String(query.limit),
+  ...(query.search && { search: query.search }),
+  ...(query.category && { category: query.category }),
+  ...(query.status && { status: query.status }),
+};
+console.log('Query Params:', queryParams);
+  const key = API_ENDPOINTS.INVENTORY.GET_PRODUCTS(queryParams)
+  const fetcher = (url: string) =>
+  fetch(url, {
+    credentials: 'include',
+  }).then((res) => {
+    if (!res.ok) {
+      throw new Error('Error al obtener datos')
+    }
+    return res.json()
+  })
+  const { data, error, isLoading } = useSWR(key, fetcher)
 
   const {
     control,
@@ -113,26 +133,32 @@ export default function InventoryPage() {
   })
 
   useEffect(() => {
-    // Simulate API call to fetch products
-    const fetchProducts = async () => {
-      try {
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        setProducts(mockProducts)
-        setLoading(false)
-      } catch (error) {
-        console.error("Error fetching products:", error)
-        setLoading(false)
-      }
-    }
-
-    fetchProducts()
-  }, [])
+    if (data && Array.isArray(data.items) && data.items.length > 0) {
+    console.log('Fetched data:', data);
+    console.log('Fetched products:', data.items);
+    const itemsMapped = data.items.map((item: Product) => ({
+        ...item,
+        price: parseFloat(item.price.toFixed(2)),
+        status:
+          item.stock === 0
+            ? "Out of Stock"
+            : item.stock < 10
+            ? "Low Stock"
+            : "In Stock",
+      }))
+      console.log('Mapped products:', itemsMapped);
+    setProducts(itemsMapped);
+  } else {
+    setProducts([]);
+    console.log('No products found or data.items is missing');
+  }
+}, [data]);
 
   // Reset form when editing product changes
   useEffect(() => {
     if (editingProduct) {
       reset({
+        id: editingProduct.id,
         name: editingProduct.name,
         category: editingProduct.category,
         price: editingProduct.price,
@@ -141,6 +167,7 @@ export default function InventoryPage() {
       })
     } else {
       reset({
+        id: "",
         name: "",
         category: "",
         price: 0,
@@ -151,12 +178,18 @@ export default function InventoryPage() {
   }, [editingProduct, reset])
 
   const handleChangePage = (_: unknown, newPage: number) => {
-    setPage(newPage)
+    setQuery((prev) => ({
+      ...prev,
+      page: newPage,
+    }))
   }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(Number.parseInt(event.target.value, 10))
-    setPage(0)
+    setQuery((prev) => ({
+      ...prev,
+      limit: Number.parseInt(event.target.value, 10),
+      page: 0,
+    }))
   }
 
   const handleOpenDialog = (product: Product | null = null) => {
@@ -169,33 +202,46 @@ export default function InventoryPage() {
     setEditingProduct(null)
   }
 
-  const onSubmit = (data: ProductFormData) => {
+  const onSubmit = async (data: ProductFormData) => {
+    console.log(data)
     if (editingProduct) {
       // Update existing product
-      const updatedProducts = products.map((p) =>
-        p.id === editingProduct.id
-          ? {
-              ...p,
-              ...data,
-              status: data.stock === 0 ? "Out of Stock" : data.stock < 10 ? "Low Stock" : "In Stock",
-            }
-          : p,
-      )
-      setProducts(updatedProducts)
+      console
+      await fetch(API_ENDPOINTS.INVENTORY.UPDATE_PRODUCT(data.id), {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data), 
+        credentials: 'include',
+      }).then((res) => {
+        if (!res.ok) {
+          setErrorMessage("Failed to update the product")
+          throw new Error('Failed to update the product')
+        }
+        return res.json()
+      })
+      await mutate(key)
       setSuccessMessage("Product updated successfully!")
     } else {
       // Add new product
-      const newProduct: Product = {
-        id: `PRD-${1000 + products.length + 1}`,
-        name: data.name,
-        category: data.category,
-        price: data.price,
-        stock: data.stock,
-        status: data.stock === 0 ? "Out of Stock" : data.stock < 10 ? "Low Stock" : "In Stock",
-        sku: data.sku,
-      }
-      setProducts([...products, newProduct])
+      await fetch(API_ENDPOINTS.INVENTORY.CREATE_PRODUCT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data), 
+        credentials: 'include',
+      }).then((res) => {
+        if (!res.ok) {
+          setErrorMessage("Failed to create the product")
+          throw new Error('Failed to create the product')
+        }
+        return res.json()
+      })
+      await mutate(key)
       setSuccessMessage("Product added successfully!")
+    
     }
 
     // Close dialog and reset form
@@ -207,9 +253,29 @@ export default function InventoryPage() {
     }, 3000)
   }
 
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = async(id: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      setProducts(products.filter((p) => p.id !== id))
+      await fetch(API_ENDPOINTS.INVENTORY.DELETE_PRODUCT(id), {
+        method: "DELETE",
+        credentials: 'include',
+      }).then((res) => {
+        if (!res.ok) {
+          setErrorMessage("Failed to delete the product")
+          throw new Error('Failed to delete the product')
+        }
+        return res.json()
+      })
+      const updatedProducts = products.filter((product) => product.id !== id);
+
+      // Si era el último producto de la página y no estamos en la primera página, retrocedé
+      if (updatedProducts.length === 0 && query.page > 0) {
+        setQuery((prev) => ({
+          ...prev,
+          page: prev.page - 1,
+        }))
+      } else {
+        await mutate(key); // recarga normalmente
+      }
       setSuccessMessage("Product deleted successfully!")
 
       // Clear success message after 3 seconds
@@ -218,21 +284,6 @@ export default function InventoryPage() {
       }, 3000)
     }
   }
-
-  // Filter products based on search term and filters
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesCategory = categoryFilter ? product.category === categoryFilter : true
-    const matchesStatus = statusFilter ? product.status === statusFilter : true
-
-    return matchesSearch && matchesCategory && matchesStatus
-  })
-
-  // Get unique categories for filter
-  const categories = [...new Set(products.map((p) => p.category))]
 
   return (
     <>
@@ -250,15 +301,25 @@ export default function InventoryPage() {
           {successMessage}
         </Alert>
       )}
-
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {errorMessage}
+        </Alert>
+      )}
+      {/* searchTerm, setCategory, setStatus */}
       <Paper elevation={3} sx={{ p: 2, mb: 3, borderRadius: 2 }}>
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center", mb: 2 }}>
           <TextField
             label="Search Products"
             variant="outlined"
             size="small"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={query.search}
+            onChange={(e) => setQuery((prev) => ({
+              ...prev,
+              page: 0,
+              search: e.target.value,
+            }))
+            }
             sx={{ flexGrow: 1 }}
             InputProps={{
               startAdornment: (
@@ -274,9 +335,13 @@ export default function InventoryPage() {
             <InputLabel id="category-filter-label">Category</InputLabel>
             <Select
               labelId="category-filter-label"
-              value={categoryFilter}
+              value={query.category}
               label="Category"
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              onChange={(e) => setQuery((prev) => ({
+                ...prev,
+                page: 0,
+                category: e.target.value,
+              }))}
               aria-label="Filter by category"
             >
               <MenuItem value="">All Categories</MenuItem>
@@ -292,9 +357,13 @@ export default function InventoryPage() {
             <InputLabel id="status-filter-label">Status</InputLabel>
             <Select
               labelId="status-filter-label"
-              value={statusFilter}
+              value={query.status}
               label="Status"
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => setQuery((prev) => ({
+                ...prev,
+                page: 0,
+                status: e.target.value,
+              }))}
               aria-label="Filter by status"
             >
               <MenuItem value="">All Status</MenuItem>
@@ -330,10 +399,10 @@ export default function InventoryPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {loading ? (
+              {isLoading ? (
                 // Loading skeleton
-                Array.from(new Array(10)).map((_, index) => (
-                  <TableRow key={index}>
+                Array.from(new Array(query.limit)).map((_, index) => (
+                  <TableRow key={index} sx={{height: rowHeight}}>
                     <TableCell>
                       <Skeleton animation="wave" />
                     </TableCell>
@@ -350,22 +419,22 @@ export default function InventoryPage() {
                       <Skeleton animation="wave" />
                     </TableCell>
                     <TableCell>
-                      <Skeleton animation="wave" width={80} />
+                      <Skeleton animation="wave" />
                     </TableCell>
                     <TableCell align="center">
-                      <Skeleton animation="wave" width={100} />
+                      <Skeleton animation="wave" />
                     </TableCell>
                   </TableRow>
                 ))
-              ) : filteredProducts.length === 0 ? (
+              ) : products.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     No products found
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((product) => (
-                  <TableRow key={product.id}>
+                products.map((product, idx) => (
+                  <TableRow key={product.id} ref={idx === 0 ? rowRef : null}>
                     <TableCell>{product.sku}</TableCell>
                     <TableCell>{product.name}</TableCell>
                     <TableCell>{product.category}</TableCell>
@@ -411,11 +480,12 @@ export default function InventoryPage() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={filteredProducts.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
+          count={data?.totalItems ?? -1}
+          rowsPerPage={query.limit}
+          page={query.page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          ActionsComponent={TablePaginationActions}
         />
       </Paper>
 

@@ -13,10 +13,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Category {
+  Electronics
+  Clothing
+  Home
+  Office
+  Food
+}
 model Product {
   id        String   @id @default(uuid())
+  numericId  Int      @unique
   name      String
-  category  String
+  category  Category
   price     Float
   stock     Int
   sku       String   @unique

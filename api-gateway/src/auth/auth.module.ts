@@ -10,6 +10,6 @@ import { UserController } from './controllers/user.controller';
   imports: [GrpcClientModule],
   controllers: [AuthController, UserController],
   providers: [AuthService, UserService, HttpAuthGuard],
-  exports: [ HttpAuthGuard],
+  exports: [ AuthService, HttpAuthGuard],
 })
 export class AuthModule {}

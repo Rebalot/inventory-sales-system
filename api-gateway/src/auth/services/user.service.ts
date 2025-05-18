@@ -2,10 +2,8 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom, Observable, timeout } from 'rxjs';
-import { TimeoutError } from 'rxjs';
-import { InternalServerErrorException, ServiceUnavailableException } from '@nestjs/common';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { mapRpcToHttp } from 'src/common/helpers/rpc-to-http';
+import { handleError } from 'src/common/helpers/errorHandler';
 
 interface GrpcService {
   create(userData: CreateUserDto): Observable<any>;
@@ -26,19 +24,7 @@ export class UserService implements OnModuleInit {
             this.grpcService.create(userData).pipe(timeout(3000)),
         );
         } catch (error: any) {
-            console.error('Error en UserService:', error);
-        this.handleError(error);
+        handleError(error);
         }
-    }
-
-    private handleError(error: any) {
-        const mongoServerError = error?.error;
-        if (mongoServerError) {
-        throw new InternalServerErrorException(mongoServerError);
-        }
-        if (error instanceof TimeoutError) {
-        throw new ServiceUnavailableException('Authentication service did not respond in time');
-        }
-        throw mapRpcToHttp(error);
     }
 }

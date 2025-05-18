@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from './schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreateUserPayload } from './types/create-user.interface';
+import { UserPayload } from './types/user.interface';
 
 @Injectable()
 export class UserService {
@@ -12,7 +12,7 @@ export class UserService {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async create(userData: CreateUserPayload): Promise<UserDocument | undefined> {
+  async createUser(userData: UserPayload): Promise<UserDocument | undefined> {
       let seed : string = '';
       const oneFirstName = userData.firstName.split(' ')[0];
         seed = oneFirstName;

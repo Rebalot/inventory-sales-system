@@ -16,6 +16,14 @@ export const API_ENDPOINTS = {
     LOGIN: `${API_BASE_URL}/api/auth/login`,
     LOGOUT: `${API_BASE_URL}/api/auth/logout`,
   },
-  INVENTORY: `${API_BASE_URL}/api/inventory`,
+  INVENTORY: {
+    GET_PRODUCTS: (query: Record<string, string>) =>
+    `${API_BASE_URL}/api/inventory/get-products?`+ new URLSearchParams(query),
+    CREATE_PRODUCT: `${API_BASE_URL}/api/inventory/create-product`,
+    UPDATE_PRODUCT: ( id: string ) => 
+    `${API_BASE_URL}/api/inventory/update-product/${id}`,
+    DELETE_PRODUCT: ( id: string ) =>
+    `${API_BASE_URL}/api/inventory/delete-product/${id}`,
+  },
   SALES: `${API_BASE_URL}/api/sales`,
 } as const;

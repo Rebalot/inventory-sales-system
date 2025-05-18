@@ -1,10 +1,10 @@
 import { PROTECTED_ROUTES, PUBLIC_ROUTES, Role } from "../constants"
 
-export function isPublicPath(pathname: string) {
-    return PUBLIC_ROUTES.some(path => pathname.startsWith(path))
+  export function isPublicPath(pathname: string) {
+    return PUBLIC_ROUTES.some(path => pathname === path || pathname.startsWith(`${path}/`))
   }
   export function isProtectedPath(pathname: string) {
-    return Object.keys(PROTECTED_ROUTES).some(path => pathname.startsWith(path))
+    return Object.keys(PROTECTED_ROUTES).some(path => pathname === path || pathname.startsWith(`${path}/`))
   }
   export function pathExists(pathname: string) {
     const existsInProtected = isProtectedPath(pathname)
