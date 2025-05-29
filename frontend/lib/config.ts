@@ -25,5 +25,8 @@ export const API_ENDPOINTS = {
     DELETE_PRODUCT: ( id: string ) =>
     `${API_BASE_URL}/api/inventory/delete-product/${id}`,
   },
-  SALES: `${API_BASE_URL}/api/sales`,
+  SALES: {
+    GET_ORDERS: (query: Record<string, any>) =>
+    `${API_BASE_URL}/api/sales/get-orders?`+ new URLSearchParams(query),
+  }
 } as const;

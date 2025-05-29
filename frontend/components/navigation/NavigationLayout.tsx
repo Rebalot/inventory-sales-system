@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Box, Toolbar } from "@mui/material"
+import { Box, Container, Toolbar } from "@mui/material"
 import Header from "./header"
 import Sidebar from "./sidebar"
 
@@ -21,10 +21,11 @@ export default function NavigationLayout({ children }: { children: React.ReactNo
       <Box
         component="main"
         sx={{
-          flexGrow: 1,
+          flex: 1,
           p: 3,
-          width: { sm: `calc(100% - 240px)` },
-          minHeight: "100vh",
+          width: "100%",
+          overflow: "hidden",
+          maxWidth: { sm: '100vw',md: 'calc(100vw - 240px)'},
         }}
       >
         <Toolbar />

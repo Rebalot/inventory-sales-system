@@ -1,1 +1,0 @@
-export type Category = 'Electronics' | 'Clothing' | 'Home' | 'Office' | 'Food';

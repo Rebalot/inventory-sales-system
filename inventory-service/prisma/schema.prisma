@@ -14,15 +14,14 @@ datasource db {
 }
 
 enum Category {
-  Electronics
-  Clothing
-  Home
-  Office
-  Food
+  CLOTHES
+  ELECTRONICS
+  FURNITURE
+  SHOES
+  MISCELLANEOUS
 }
 model Product {
   id        String   @id @default(uuid())
-  numericId  Int      @unique
   name      String
   category  Category
   price     Float
@@ -30,4 +29,6 @@ model Product {
   sku       String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@map("products")
 }

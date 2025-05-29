@@ -31,24 +31,25 @@ import {
   FormHelperText,
   Skeleton,
   Alert,
+  Tooltip,
 } from "@mui/material"
 import { Add as AddIcon, Search as SearchIcon, Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import NavigationLayout from "@/components/navigation/NavigationLayout"
 import { API_ENDPOINTS } from "@/lib/config"
 import useSWR, { mutate } from "swr"
 import { TablePaginationActions } from "@/components/table/tablePagination"
-import { set } from "date-fns"
+
 // Define product type
 export enum Category {
-  Electronics = "Electronics",
-  Clothing = "Clothing",
-  Home = "Home",
-  Office = "Office",
-  Food = "Food"
+  Clothes = "CLOTHES",
+  Electronics = "ELECTRONICS",
+  Furniture = "FURNITURE",
+  Shoes = "SHOES",
+  Miscellaneous = "MISCELLANEOUS",
 }
+
 interface Product {
   id: string
   name: string
@@ -79,7 +80,6 @@ export default function InventoryPage() {
   const [errorMessage, setErrorMessage] = useState("")
   const rowRef = useRef<HTMLTableRowElement>(null);
   const [rowHeight, setRowHeight] = useState<number>(67);
-  const categories = Object.values(Category);
 
   useLayoutEffect(() => {
     if (rowRef.current) {
@@ -138,7 +138,10 @@ console.log('Query Params:', queryParams);
     console.log('Fetched products:', data.items);
     const itemsMapped = data.items.map((item: Product) => ({
         ...item,
-        price: parseFloat(item.price.toFixed(2)),
+        category: 
+          item.category
+          .toLowerCase()
+          .replace(/^\w/, c => c.toUpperCase()),
         status:
           item.stock === 0
             ? "Out of Stock"
@@ -286,7 +289,7 @@ console.log('Query Params:', queryParams);
   }
 
   return (
-    <>
+    <Box sx={{ display: "flex", flexDirection: "column", maxHeight: "calc(100vh - 120px)", width: { sm: 'calc(100vw - 48px)', md: 'calc(100vw - 288px)'}}}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Inventory Management
@@ -306,7 +309,6 @@ console.log('Query Params:', queryParams);
           {errorMessage}
         </Alert>
       )}
-      {/* searchTerm, setCategory, setStatus */}
       <Paper elevation={3} sx={{ p: 2, mb: 3, borderRadius: 2 }}>
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center", mb: 2 }}>
           <TextField
@@ -345,9 +347,9 @@ console.log('Query Params:', queryParams);
               aria-label="Filter by category"
             >
               <MenuItem value="">All Categories</MenuItem>
-              {categories.map((category) => (
-                <MenuItem key={category} value={category}>
-                  {category}
+              {Object.entries(Category).map(([key, value]) => (
+                <MenuItem key={key} value={value}>
+                  {key}
                 </MenuItem>
               ))}
             </Select>
@@ -384,18 +386,18 @@ console.log('Query Params:', queryParams);
         </Box>
       </Paper>
 
-      <Paper elevation={3} sx={{ borderRadius: 2 }}>
-        <TableContainer>
-          <Table aria-label="inventory table">
+      <Paper elevation={3} sx={{ borderRadius: 2, flex: 1, overflow: "hidden", display: "flex", flexDirection: "column"}}>
+        <TableContainer sx={{ overflow: "auto"}}>
+          <Table aria-label="inventory table" stickyHeader>
             <TableHead>
               <TableRow>
                 <TableCell>SKU</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Category</TableCell>
-                <TableCell align="right">Price</TableCell>
-                <TableCell align="right">Stock</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Stock</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell align="center">Actions</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -403,25 +405,25 @@ console.log('Query Params:', queryParams);
                 // Loading skeleton
                 Array.from(new Array(query.limit)).map((_, index) => (
                   <TableRow key={index} sx={{height: rowHeight}}>
-                    <TableCell>
+                    <TableCell sx={{width: 140, minWidth: 140}}>
                       <Skeleton animation="wave" />
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{width: 160, minWidth: 160}}>
                       <Skeleton animation="wave" />
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{width: 150, minWidth: 150}}>
                       <Skeleton animation="wave" />
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell sx={{width: 120, minWidth: 120}}>
                       <Skeleton animation="wave" />
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell sx={{width: 80, minWidth: 80}}>
                       <Skeleton animation="wave" />
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{width: 140, minWidth: 140}}>
                       <Skeleton animation="wave" />
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell sx={{width: 100, minWidth: 100}}>
                       <Skeleton animation="wave" />
                     </TableCell>
                   </TableRow>
@@ -435,12 +437,27 @@ console.log('Query Params:', queryParams);
               ) : (
                 products.map((product, idx) => (
                   <TableRow key={product.id} ref={idx === 0 ? rowRef : null}>
-                    <TableCell>{product.sku}</TableCell>
-                    <TableCell>{product.name}</TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell align="right">${product.price.toFixed(2)}</TableCell>
-                    <TableCell align="right">{product.stock}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{width: 140, minWidth: 140}}>{product.sku}</TableCell>
+                    <TableCell sx={{width: 160, minWidth: 160}}>
+                      <Tooltip title={product.name} placement="top-start" arrow>
+                        <Typography
+                        variant="body2"
+                        sx={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 1,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                        >
+                          {product.name}
+                        </Typography>
+                      </Tooltip>
+                      </TableCell>
+                    <TableCell sx={{width: 150, minWidth: 150}}>{product.category}</TableCell>
+                    <TableCell sx={{width: 120, minWidth: 120}}>${product.price.toFixed(2)}</TableCell>
+                    <TableCell sx={{width: 80, minWidth: 80}}>{product.stock}</TableCell>
+                    <TableCell sx={{width: 140, minWidth: 140}}>
                       <Chip
                         label={product.status}
                         color={
@@ -453,7 +470,7 @@ console.log('Query Params:', queryParams);
                         size="small"
                       />
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell sx={{width: 100, minWidth: 100}}>
                       <IconButton
                         color="primary"
                         onClick={() => handleOpenDialog(product)}
@@ -486,6 +503,7 @@ console.log('Query Params:', queryParams);
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           ActionsComponent={TablePaginationActions}
+          sx={{ minHeight: 52, overflow: "hidden", borderTop: '1px solid hsl(var(--border))' }}
         />
       </Paper>
 
@@ -520,11 +538,11 @@ console.log('Query Params:', queryParams);
                       <InputLabel id="category-label">Category</InputLabel>
                       <Select {...field} labelId="category-label" label="Category" aria-label="Product Category">
                         <MenuItem value="">Select Category</MenuItem>
-                        <MenuItem value="Electronics">Electronics</MenuItem>
-                        <MenuItem value="Clothing">Clothing</MenuItem>
-                        <MenuItem value="Home">Home</MenuItem>
-                        <MenuItem value="Office">Office</MenuItem>
-                        <MenuItem value="Food">Food</MenuItem>
+                        {Object.entries(Category).map(([key, value]) => (
+                          <MenuItem key={key} value={value}>
+                            {key}
+                          </MenuItem>
+                        ))}
                       </Select>
                       {errors.category && <FormHelperText>{errors.category.message}</FormHelperText>}
                     </FormControl>
@@ -596,6 +614,6 @@ console.log('Query Params:', queryParams);
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Box>
   )
 }

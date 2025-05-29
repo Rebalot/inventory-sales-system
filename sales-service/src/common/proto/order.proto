@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package order;
+
+service OrderService {
+  rpc GetPaginatedOrders (QueryParams) returns (Orders);
+  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetOrderById (GetOrderByIdRequest) returns (Order);
+}
+
+message CreateOrderRequest {
+  string customer_id = 1;
+  string payment_method = 2;
+  repeated OrderItemInput items = 3;
+}
+
+message OrderItemInput {
+  string product_id = 1;
+  int32 quantity = 2;
+}
+
+message CreateOrderResponse {
+  string id = 1;
+  bool success = 2;
+  string message = 3;
+  Order order = 4;
+}
+
+message GetOrderByIdRequest {
+  string id = 1;
+}
+
+message Order {
+  string id = 1;
+  string order_number = 2;
+  string customer_id = 3;
+  string date = 4;
+  double total = 5;
+  string status = 6;
+  string payment_method = 7;
+  repeated OrderItem items = 8;
+}
+
+message OrderItem {
+  string product_id = 1;
+  string product_name = 2;
+  double unit_price = 3;
+  int32 quantity = 4;
+  double subtotal = 5;
+}
+
+message QueryParams {
+  int32 page = 1;
+  int32 limit = 2;
+  string search = 3;
+  string status = 4;
+  DateRange date = 5;
+}
+
+message DateRange {
+  string gte = 1;
+  string lte = 2;
+}
+
+
+message Orders {
+  repeated Order items = 1;
+  int32 total_items = 2;
+  int32 total_pages = 3;
+  int32 current_page = 4;
+}

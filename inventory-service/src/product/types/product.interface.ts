@@ -8,12 +8,12 @@ export interface ProductPayload {
     sku: string;
 }
 
-export interface Product extends ProductPayload {
+export interface ProductResponse extends ProductPayload {
     id: string;
 }
 
 export interface PaginatedProducts {
-    items: Product[];
+    items: ProductResponse[];
     totalItems: number;
     totalPages: number;
     currentPage: number;

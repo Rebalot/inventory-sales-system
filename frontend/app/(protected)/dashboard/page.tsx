@@ -87,7 +87,7 @@ export default function Dashboard() {
 
       <Grid container spacing={3}>
         {/* Summary Cards */}
-        <Grid size={{ xs: 12, sm: 6, md: 3}}>
+        <Grid size={{ xs: 6, sm: 6, md: 3}}>
           <Paper
             elevation={3}
             sx={{
@@ -129,7 +129,7 @@ export default function Dashboard() {
           </Paper>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3}}>
+        <Grid size={{ xs: 6, sm: 6, md: 3}}>
           <Paper
             elevation={3}
             sx={{
@@ -171,7 +171,7 @@ export default function Dashboard() {
           </Paper>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3}}>
+        <Grid size={{ xs: 6, sm: 6, md: 3}}>
           <Paper
             elevation={3}
             sx={{
@@ -213,7 +213,7 @@ export default function Dashboard() {
           </Paper>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3}}>
+        <Grid size={{ xs: 6, sm: 6, md: 3}}>
           <Paper
             elevation={3}
             sx={{
@@ -255,6 +255,7 @@ export default function Dashboard() {
           </Paper>
         </Grid>
 
+        
         {/* Sales Chart */}
         <Grid size={{ xs: 12}}>
           <Paper

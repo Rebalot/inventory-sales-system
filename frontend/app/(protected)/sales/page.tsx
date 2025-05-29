@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useLayoutEffect, useRef } from "react"
 import {
   Box,
   Typography,
@@ -29,107 +29,123 @@ import {
   Button,
   Grid,
   Skeleton,
+  Tooltip,
+  Container,
 } from "@mui/material"
 import { Search as SearchIcon, Visibility as ViewIcon, Receipt as ReceiptIcon } from "@mui/icons-material"
-import NavigationLayout from "@/components/navigation/NavigationLayout"
+import useSWR from "swr"
+import { API_ENDPOINTS } from "@/lib/config"
+import { TablePaginationActions } from "@/components/table/tablePagination"
+import { getUtcRangeFromLocalDate } from "@/lib/utils/utils"
 
 // Define order type
 interface Order {
   id: string
-  customer: string
+  orderNumber: string
+  customerId: string
   date: string
   total: number
   status: "Completed" | "Processing" | "Shipped" | "Cancelled"
-  paymentMethod: string
-  items: number
+  paymentMethod: "Credit Card" | "PayPal" | "Bank Transfer"
+  items: OrderItem[]
 }
-
-// Mock data for orders
-const mockOrders: Order[] = Array.from({ length: 50 }, (_, i) => {
-  const date = new Date()
-  date.setDate(date.getDate() - Math.floor(Math.random() * 30))
-
-  return {
-    id: `ORD-${10000 + i}`,
-    customer: `Customer ${i + 1}`,
-    date: date.toISOString().split("T")[0],
-    total: Number.parseFloat((Math.random() * 1000 + 50).toFixed(2)),
-    status: ["Completed", "Processing", "Shipped", "Cancelled"][Math.floor(Math.random() * 4)] as
-      | "Completed"
-      | "Processing"
-      | "Shipped"
-      | "Cancelled",
-    paymentMethod: ["Credit Card", "PayPal", "Bank Transfer"][Math.floor(Math.random() * 3)],
-    items: Math.floor(Math.random() * 5) + 1,
-  }
-})
-
 // Define order details type
 interface OrderItem {
-  id: string
-  product: string
-  price: number
+  productId: string
+  productName: string
+  unitPrice: number
   quantity: number
-  total: number
-}
-
-// Mock data for order items
-const generateOrderItems = (itemCount: number): OrderItem[] => {
-  return Array.from({ length: itemCount }, (_, i) => {
-    const price = Number.parseFloat((Math.random() * 200 + 10).toFixed(2))
-    const quantity = Math.floor(Math.random() * 3) + 1
-
-    return {
-      id: `ITEM-${1000 + i}`,
-      product: `Product ${i + 1}`,
-      price,
-      quantity,
-      total: price * quantity,
-    }
-  })
+  subtotal: number
 }
 
 export default function SalesPage() {
   const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("")
-  const [dateFilter, setDateFilter] = useState<string>("")
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [openDialog, setOpenDialog] = useState(false)
+  const rowRef = useRef<HTMLTableRowElement>(null);
+  const [rowHeight, setRowHeight] = useState<number>(67);
+
+    useLayoutEffect(() => {
+      if (rowRef.current) {
+        const height = rowRef.current.getBoundingClientRect().height;
+        if (height) setRowHeight(height);
+      }
+    }, [orders]);
+
+  const [query, setQuery] = useState({
+    page: 0,
+    limit: 10,
+    search: "",
+    status: "",
+    date: {
+      gte: "",
+      lte: "",
+    },
+  });
+    
+    const queryParams = {
+    page: String(query.page),
+    limit: String(query.limit),
+    ...(query.search && { search: query.search }),
+    ...(query.status && { status: query.status }),
+    ...(query.date?.gte && query.date?.lte &&  { date: JSON.stringify(query.date) }),
+  };
+  console.log('Query Params:', queryParams);
+    const key = API_ENDPOINTS.SALES.GET_ORDERS(queryParams)
+    const fetcher = (url: string) =>
+    fetch(url, {
+      credentials: 'include',
+    }).then((res) => {
+      if (!res.ok) {
+        throw new Error('Error al obtener datos')
+      }
+      return res.json()
+    })
+    const { data, error, isLoading } = useSWR(key, fetcher)
+    console.log('Data:', data)
 
   useEffect(() => {
-    // Simulate API call to fetch orders
-    const fetchOrders = async () => {
-      try {
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        setOrders(mockOrders)
-        setLoading(false)
-      } catch (error) {
-        console.error("Error fetching orders:", error)
-        setLoading(false)
-      }
+      if (data && Array.isArray(data.items) && data.items.length > 0) {
+      console.log('Fetched data:', data);
+      console.log('Fetched orders:', data.items);
+      const itemsMapped = data.items.map((item: Order) => ({
+          ...item,
+          date: new Date(item.date).toLocaleString(),
+          status: item.status.toLowerCase()
+            .split("_")
+            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" "),
+          paymentMethod: item.paymentMethod
+            .toLowerCase()
+            .split("_")
+            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" "),
+        }))
+        console.log('Mapped products:', itemsMapped);
+      setOrders(itemsMapped);
+    } else {
+      setOrders([]);
+      console.log('No products found or data.items is missing');
     }
-
-    fetchOrders()
-  }, [])
+  }, [data]);
 
   const handleChangePage = (_: unknown, newPage: number) => {
-    setPage(newPage)
+    setQuery((prev) => ({ 
+      ...prev, 
+      page: newPage 
+    }))
   }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(Number.parseInt(event.target.value, 10))
-    setPage(0)
+    setQuery((prev) => ({ 
+      ...prev, 
+      limit: Number.parseInt(event.target.value, 10),
+      page: 0
+    }))
   }
 
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order)
-    setOrderItems(generateOrderItems(order.items))
     setOpenDialog(true)
   }
 
@@ -138,20 +154,8 @@ export default function SalesPage() {
     setSelectedOrder(null)
   }
 
-  // Filter orders based on search term and filters
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch =
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesStatus = statusFilter ? order.status === statusFilter : true
-    const matchesDate = dateFilter ? order.date.includes(dateFilter) : true
-
-    return matchesSearch && matchesStatus && matchesDate
-  })
-
   return (
-    <>
+    <Box sx={{ display: "flex", flexDirection: "column", maxHeight: "calc(100vh - 120px)", width: { sm: 'calc(100vw - 48px)', md: 'calc(100vw - 288px)'}}}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Sales Management
@@ -167,8 +171,12 @@ export default function SalesPage() {
             label="Search Orders"
             variant="outlined"
             size="small"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={query.search}
+            onChange={(e) => setQuery((prev) => ({
+              ...prev,
+              page: 0,
+              search: e.target.value
+            }))}
             sx={{ flexGrow: 1 }}
             InputProps={{
               startAdornment: (
@@ -184,16 +192,20 @@ export default function SalesPage() {
             <InputLabel id="status-filter-label">Status</InputLabel>
             <Select
               labelId="status-filter-label"
-              value={statusFilter}
+              value={query.status}
               label="Status"
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => setQuery((prev) => ({
+                ...prev,
+                page: 0,
+                status: e.target.value
+              }))}
               aria-label="Filter by status"
             >
               <MenuItem value="">All Status</MenuItem>
-              <MenuItem value="Completed">Completed</MenuItem>
-              <MenuItem value="Processing">Processing</MenuItem>
-              <MenuItem value="Shipped">Shipped</MenuItem>
-              <MenuItem value="Cancelled">Cancelled</MenuItem>
+              <MenuItem value="COMPLETED">Completed</MenuItem>
+              <MenuItem value="PROCESSING">Processing</MenuItem>
+              <MenuItem value="SHIPPED">Shipped</MenuItem>
+              <MenuItem value="CANCELLED">Cancelled</MenuItem>
             </Select>
           </FormControl>
 
@@ -201,8 +213,25 @@ export default function SalesPage() {
             label="Date"
             type="date"
             size="small"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
+            value={query.date?.gte?.slice(0, 10) || ""}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              if (!inputValue) {
+                setQuery((prev) => ({
+                  ...prev,
+                  page: 0,
+                  date: { gte: "", lte: "" },
+                }));
+                return;
+              }
+              const utcDate = getUtcRangeFromLocalDate(inputValue);
+              console.log('Selected date range:', utcDate);
+              setQuery((prev) => ({
+                ...prev,
+                page: 0,
+                date: utcDate
+              }));
+            }}
             InputLabelProps={{ shrink: true }}
             sx={{ minWidth: 150 }}
             aria-label="Filter by date"
@@ -210,62 +239,79 @@ export default function SalesPage() {
         </Box>
       </Paper>
 
-      <Paper elevation={3} sx={{ borderRadius: 2 }}>
-        <TableContainer>
-          <Table aria-label="sales table">
+      <Paper elevation={3} sx={{ borderRadius: 2, flex: 1, overflow: "hidden", display: "flex", flexDirection: "column"}}>
+        <TableContainer sx={{ overflow: "auto"}}>
+          <Table aria-label="sales table" stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell>Order ID</TableCell>
-                <TableCell>Customer</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell align="right">Total</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Payment Method</TableCell>
-                <TableCell align="center">Actions</TableCell>
+                <TableCell >Order Number</TableCell>
+                <TableCell >Customer</TableCell>
+                <TableCell >Date</TableCell>
+                <TableCell >Total</TableCell>
+                <TableCell >Status</TableCell>
+                <TableCell >Payment Method</TableCell>
+                <TableCell >Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {loading ? (
+              {isLoading ? (
                 // Loading skeleton
-                Array.from(new Array(10)).map((_, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
+                Array.from(new Array(query.limit)).map((_, index) => (
+                  <TableRow key={index} sx={{height: rowHeight}}>
+                    <TableCell sx={{width: 140, minWidth: 140}}>
+                      <Skeleton animation="wave"/>
+                    </TableCell>
+                    <TableCell sx={{width: 140, minWidth: 140}}>
                       <Skeleton animation="wave" />
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{width: 200, minWidth: 200}}>
                       <Skeleton animation="wave" />
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{width: 125, minWidth: 125}}>
                       <Skeleton animation="wave" />
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell sx={{width: 130, minWidth: 130}}>
+                      <Skeleton animation="wave"/>
+                    </TableCell>
+                    <TableCell sx={{width: 150, minWidth: 150}}>
                       <Skeleton animation="wave" />
                     </TableCell>
-                    <TableCell>
-                      <Skeleton animation="wave" width={80} />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton animation="wave" />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Skeleton animation="wave" width={40} />
+                    <TableCell sx={{width: 140, minWidth: 140}}>
+                      <Skeleton animation="wave"/>
                     </TableCell>
                   </TableRow>
                 ))
-              ) : filteredOrders.length === 0 ? (
+              ) : orders.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     No orders found
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell>{order.id}</TableCell>
-                    <TableCell>{order.customer}</TableCell>
-                    <TableCell>{order.date}</TableCell>
-                    <TableCell align="right">${order.total.toFixed(2)}</TableCell>
-                    <TableCell>
+                orders.map((order, idx) => (
+                  <TableRow key={order.id} ref={idx === 0 ? rowRef : null}>
+                    <TableCell sx={{width: 140, minWidth: 140}}>
+                      {order.orderNumber}
+                    </TableCell >
+                    <TableCell sx={{width: 140, minWidth: 140}}>
+                      <Tooltip title={order.customerId} placement="top-start" arrow>
+                        <Typography
+                        variant="body2"
+                        sx={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 1,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {order.customerId}
+                      </Typography>
+                      </Tooltip>
+                      </TableCell>
+                    <TableCell sx={{width: 200, minWidth: 200}}>{order.date}</TableCell>
+                    <TableCell sx={{width: 125, minWidth:125}}>${order.total.toFixed(2)}</TableCell>
+                    <TableCell sx={{width: 130, minWidth: 130}}>
                       <Chip
                         label={order.status}
                         color={
@@ -280,8 +326,8 @@ export default function SalesPage() {
                         size="small"
                       />
                     </TableCell>
-                    <TableCell>{order.paymentMethod}</TableCell>
-                    <TableCell align="center">
+                    <TableCell sx={{width: 150, minWidth: 150}}>{order.paymentMethod}</TableCell>
+                    <TableCell sx={{width: 140, minWidth: 140}}>
                       <IconButton
                         color="primary"
                         onClick={() => handleViewOrder(order)}
@@ -300,11 +346,13 @@ export default function SalesPage() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={filteredOrders.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
+          count={data?.totalItems ?? -1}
+          rowsPerPage={query.limit}
+          page={query.page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          ActionsComponent={TablePaginationActions}
+          sx={{ minHeight: 52, overflow: "hidden", borderTop: '1px solid hsl(var(--border))' }}
         />
       </Paper>
 
@@ -315,7 +363,7 @@ export default function SalesPage() {
             <DialogTitle>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <ReceiptIcon color="primary" />
-                Order Details - {selectedOrder.id}
+                Order Details: <Typography component='span' variant="h6" sx={{color: 'text.secondary'}}>{selectedOrder.id}</Typography>
               </Box>
             </DialogTitle>
             <DialogContent>
@@ -324,7 +372,7 @@ export default function SalesPage() {
                   <Typography variant="subtitle2" color="text.secondary">
                     Customer
                   </Typography>
-                  <Typography variant="body1">{selectedOrder.customer}</Typography>
+                  <Typography variant="body1">{selectedOrder.customerId}</Typography>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6}}>
                   <Typography variant="subtitle2" color="text.secondary">
@@ -372,12 +420,12 @@ export default function SalesPage() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {orderItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{item.product}</TableCell>
-                        <TableCell align="right">${item.price.toFixed(2)}</TableCell>
+                    {selectedOrder.items.map((item) => (
+                      <TableRow key={item.productId}>
+                        <TableCell>{item.productName}</TableCell>
+                        <TableCell align="right">${item.unitPrice.toFixed(2)}</TableCell>
                         <TableCell align="right">{item.quantity}</TableCell>
-                        <TableCell align="right">${item.total.toFixed(2)}</TableCell>
+                        <TableCell align="right">${item.subtotal.toFixed(2)}</TableCell>
                       </TableRow>
                     ))}
                     <TableRow>
@@ -401,6 +449,6 @@ export default function SalesPage() {
           </>
         )}
       </Dialog>
-    </>
+    </Box>
   )
 }
