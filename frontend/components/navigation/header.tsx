@@ -25,7 +25,7 @@ import {
 } from "@mui/icons-material"
 import { useRouter } from "next/navigation"
 import { ColorModeContext } from "@/app/ClientLayout"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/lib/AuthContext"
 import { log } from "console"
 
 

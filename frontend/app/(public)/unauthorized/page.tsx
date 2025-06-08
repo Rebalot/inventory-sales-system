@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/lib/AuthContext"
 import { Box, Button, Container, Typography, Paper, CircularProgress } from "@mui/material"
 import { ShieldAlert } from "lucide-react"
 import Link from "next/link"

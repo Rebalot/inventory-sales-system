@@ -14,8 +14,8 @@ export class AuthGrpcController {
   }
 
   @GrpcMethod('AuthService', 'ValidateToken')
-  async validate(data: { token: string }) {
-    const user = await this.authService.validateToken(data.token);
+  async validate(data: { accessToken: string }) {
+    const user = await this.authService.validateToken(data.accessToken);
     return {
       id: user._id,
       email: user.email,

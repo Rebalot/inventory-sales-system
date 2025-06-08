@@ -23,7 +23,7 @@ import {
 } from "@mui/icons-material"
 import { PROTECTED_ROUTES } from "@/lib/constants"
 import { useMemo } from "react"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/lib/AuthContext"
 
 const drawerWidth = 240
 

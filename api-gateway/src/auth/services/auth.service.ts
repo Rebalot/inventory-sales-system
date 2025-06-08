@@ -6,7 +6,7 @@ import { LoginPayload } from '../types/login-payload.type';
 import { handleError } from 'src/common/helpers/errorHandler';
 
 interface AuthGrpcService {
-  validateToken(data: { token: string }): Observable<any>;
+  validateToken(data: { accessToken: string }): Observable<any>;
   login(loginPayload: LoginPayload): Observable<any>;
 }
 
@@ -23,7 +23,7 @@ export class AuthServiceClient implements OnModuleInit {
   async validateToken(token: string) {
     try {
       return await firstValueFrom(
-        this.authService.validateToken({ token }).pipe(timeout(3000)),
+        this.authService.validateToken({ accessToken: token }).pipe(timeout(3000)),
       );
     } catch (error: any) {
       handleError(error);

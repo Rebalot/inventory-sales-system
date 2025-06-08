@@ -18,7 +18,7 @@ import {
   CircularProgress,
 } from "@mui/material"
 import { Visibility, VisibilityOff } from "@mui/icons-material"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/lib/AuthContext"
 
 
 // Define the form schema with Zod

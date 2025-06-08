@@ -3,7 +3,7 @@ import { Role } from '../types/role.type';
 import { HydratedDocument } from 'mongoose';
 
 export type UserDocument = HydratedDocument<User>;
-@Schema({ timestamps: true })
+@Schema({ collection: 'admin_users', timestamps: true })
 export class User {
   @Prop({ required: true, unique: true })
   email!: string;

@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { Role } from "./role.type";
 
 export interface UserPayload {
@@ -8,8 +9,8 @@ export interface UserPayload {
     role: Role[];
   }
 
-export interface User {
-    id: string;
+export interface UserResponse {
+    id: Types.ObjectId;
     email: string;
     firstName: string;
     lastName?: string;

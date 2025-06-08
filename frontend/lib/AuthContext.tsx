@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { User } from './types/user.interface'
 import { API_ENDPOINTS } from './config'
 import { usePathname } from 'next/navigation'
+import { set } from 'date-fns'
 
 type AuthContextType = {
     user: User | null
@@ -12,7 +13,7 @@ type AuthContextType = {
     isLoading: boolean
     error: string | null
     login: (email: string, password: string) => Promise<boolean>
-    logout: () => Promise<void>
+    logout: () => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -20,32 +21,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [isLoggingIn, setLoggingIn] = useState(false)
-const [isLoggingOut, setLoggingOut] = useState(false)
+  const [isLoggingOut, setLoggingOut] = useState(false)
   const isLoading = isLoggingIn || isLoggingOut
   const [error, setError] = useState<string | null>(null)
   const pathname = usePathname()
-  useEffect(() => {
-    const loadUser = async () => {
-      setLoggingIn(true)
-      try {
-        const res = await fetch(API_ENDPOINTS.AUTH.ME, {
-          credentials: 'include',
-        })
 
-        if (res.ok) {
-          const data = await res.json()
-          console.log('User data AuthContext:', data)
-          setUser(data)
-        } else {
-          setUser(null)
-        }
-      } catch {
+  const loadUser = async () => {
+    try {
+      const res = await fetch(API_ENDPOINTS.AUTH.ME, {
+        credentials: 'include',
+      })
+      if (!res.ok) {
         setUser(null)
-      } finally {
-        setLoggingIn(false)
+        return null
       }
+      const data = await res.json()
+      console.log('User data AuthContext:', data)
+      setUser(data)
+      return data
+    } catch {
+      setUser(null)
+      return null
     }
-
+  }
+  useEffect(() => {
     loadUser()
   }, [])
 
@@ -62,39 +61,30 @@ const [isLoggingOut, setLoggingOut] = useState(false)
     setError(null)
     
     try {
-        const res = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        })
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}))
-          console.error('Login error:', errorData)
-          throw new Error(errorData.message || 'Invalid credentials')
-        }
-    
-        const userRes = await fetch(API_ENDPOINTS.AUTH.ME, {
-          credentials: 'include',
-        })
-    
-        if (!userRes.ok) {
-          throw new Error('Failed to fetch user data after login')
-        }
-    
-        const data = await userRes.json()
-        setUser(data)
-        return true
-        
-        } catch (err: any) {
-          console.error('Login error:', err)
-          setError(err.message || 'An error occurred during login')
-          return false
-        } finally {
-          setLoggingIn(false)
-        }
+      const res = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+      })
+      if (!res.ok) {
+          throw new Error('Invalid credentials')
+      }
+  
+      const user = await loadUser()
+      if (!user) {
+        throw new Error('Failed to load user data after login')
+      }
+      return true
+    } catch (err: any) {
+      console.error('Login error:', err)
+      setError(err.message || 'An error occurred during login')
+      return false
+    } finally {
+      setLoggingIn(false)
+    }
   }
 
   const logout = async () => {
@@ -102,14 +92,20 @@ const [isLoggingOut, setLoggingOut] = useState(false)
     setError(null)
     
     try {
-        await fetch(API_ENDPOINTS.AUTH.LOGOUT, {
+        const res = await fetch(API_ENDPOINTS.AUTH.LOGOUT, {
         method: 'POST',
         credentials: 'include',
         })
+        if (!res.ok) {
+          throw new Error('Logout failed')
+        }
+        setUser(null)
+        return true
     } catch (err: any) {
         console.error('Logout error:', err)
         setError(err.message || 'Failed to log out. Please try again.')
-    } finally {
+        return false
+      } finally {
         setLoggingOut(false)
   }
   }
