@@ -4,7 +4,7 @@ const env = process.env.NODE_ENV as Environment;
 
 const API_BASES = {
   development: 'http://localhost:3001',
-  production: '',
+  production: process.env.NEXT_PUBLIC_API_URL!, //Docker
   test: '',
 } satisfies Record<Environment, string>;
 
