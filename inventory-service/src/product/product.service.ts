@@ -41,10 +41,12 @@ export class ProductService {
       select: {
       id: true,
       name: true,
+      description: true,
       category: true,
       price: true,
       stock: true,
-      sku: true
+      sku: true,
+      image: true
     },
     })
     const total = await this.prisma.product.count(
@@ -121,10 +123,12 @@ export class ProductService {
       select: {
         id: true,
         name: true,
+        description: true,
         category: true,
         price: true,
         stock: true,
-        sku: true
+        sku: true,
+        image: true
       }
     });
     return products;

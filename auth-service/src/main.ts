@@ -29,6 +29,7 @@ async function bootstrap() {
   });
 
   await app.startAllMicroservices();
+  console.log(`🚀 auth-service gRPC running on port ${process.env.GRPC_PORT || 50051}`);
   // app.listen()
 }
 bootstrap();

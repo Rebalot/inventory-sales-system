@@ -2,10 +2,12 @@ import { Category } from '@prisma/client';
 
 export interface ProductPayload {
     name: string;
+    description: string;
     category: Category;
     price: number;
     stock: number;
     sku: string;
+    image: string;
 }
 
 export interface ProductResponse extends ProductPayload {
@@ -22,10 +24,12 @@ export interface PaginatedProducts {
 export interface UpdateProductPayload {
     id: string;
     name?: string;
+    description?: string;
     category?: Category;
     price?: number;
     stock?: number;
     sku?: string;
+    image?: string
 }
 
 export interface ProductQuery {

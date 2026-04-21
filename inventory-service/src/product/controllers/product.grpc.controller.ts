@@ -23,10 +23,12 @@ export class ProductGrpcController {
       return {
         id: product.id,
         name: product.name,
+        description: product.description,
         category: product.category,
         price: product.price,
         stock: product.stock,
         sku: product.sku,
+        image: product.image,
       }
     }
 
@@ -37,10 +39,12 @@ export class ProductGrpcController {
       return {
         id: product.id,
         name: product.name,
+        description: product.description,
         category: product.category,
         price: product.price,
         stock: product.stock,
         sku: product.sku,
+        image: product.image
       }
     }
     
@@ -64,10 +68,12 @@ export class ProductGrpcController {
         products: products.map(product => ({
         id: product.id,
         name: product.name,
+        description: product.description,
         category: product.category,
         price: product.price,
         stock: product.stock,
         sku: product.sku,
+        image: product.image
         }))
       }
     }

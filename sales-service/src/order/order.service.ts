@@ -145,7 +145,7 @@ export class OrderService {
   await this.productService.updateStockBulk(items);
 
   return createdOrder;
-  } catch(error){
+  } catch(error: any){
     throw new RpcException({
       code: error.code || status.INTERNAL,
       message: error.message || 'Internal server error',

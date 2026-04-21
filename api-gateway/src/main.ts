@@ -16,6 +16,7 @@ async function bootstrap() {
     transform: true,
   }));
   app.use(cookieParser());
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.HTTP_PORT ?? 3000);
+  console.log(`🚀 API Gateway running on http://localhost:${process.env.HTTP_PORT}`);
 }
 bootstrap();

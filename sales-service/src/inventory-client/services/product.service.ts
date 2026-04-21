@@ -12,7 +12,7 @@ interface ProductServiceGrpc {
 
 @Injectable()
 export class ProductServiceClient implements OnModuleInit {
-  private productService: ProductServiceGrpc;
+  private productService!: ProductServiceGrpc;
 
   constructor(@Inject('INVENTORY_PACKAGE') private client: ClientGrpc) {}
 

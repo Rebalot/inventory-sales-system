@@ -16,7 +16,7 @@ services:
       - redis-data:/data
 
   postgres:
-      image: postgres
+      image: postgres:17
       container_name: postgres-container
       ports:
         - "5433:5432"
@@ -29,5 +29,10 @@ services:
 
 volumes:
   mongo-data:
+    name: inventory-sales-system_mongo-data
+
   redis-data:
+    name: inventory-sales-system_redis-data
+
   postgres-data:
+    name: inventory-sales-system_postgres-data

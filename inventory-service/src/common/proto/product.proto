@@ -18,6 +18,8 @@ message ProductPayload {
   float price = 3;
   int32 stock = 4;
   string sku = 5;
+  string image = 6;
+  string description = 7;
 }
 
 message Product {
@@ -27,6 +29,8 @@ message Product {
   float price = 4;
   int32 stock = 5;
   string sku = 6;
+  string image = 7;
+  string description = 8;
 }
 
 message QueryParams {

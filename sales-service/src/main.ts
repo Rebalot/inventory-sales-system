@@ -28,6 +28,7 @@ async function bootstrap() {
   });
 
   await app.startAllMicroservices();
-  app.listen(process.env.HTTP_PORT || 3000)
+  console.log(`🚀 sales-service gRPC running on port ${process.env.GRPC_PORT || 50051}`);
+  //app.listen(process.env.HTTP_PORT || 3000)
 }
 bootstrap();
